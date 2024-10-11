@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -10,17 +14,78 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "experimentalDecorators": true,
     "jsx": "preserve",
+    "types": [
+      "react",
+      "react-dom"
+    ],
     "incremental": true,
     "plugins": [
       {
         "name": "next"
       }
     ],
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@src": [
+        "./src"
+      ],
+      "@src/*": [
+        "./src/*"
+      ],
+      "@components": [
+        "./src/app/components"
+      ],
+      "@components/*": [
+        "./src/app/components/*"
+      ],
+      "@utils": [
+        "./src/app/utils"
+      ],
+      "@utils/*": [
+        "./src/app/utils/*"
+      ],
+      "@hooks": [
+        "./src/app/hooks"
+      ],
+      "@hooks/*": [
+        "./src/app/hooks/*"
+      ],
+      "@stores": [
+        "src/app/stores"
+      ],
+      "@stores/*": [
+        "src/app/stores/*"
+      ],
+      "@constants": [
+        "./src/app/constants"
+      ],
+      "@constants/*": [
+        "./src/app/constants/*"
+      ],
+      "@blockchain": [
+        "./src/app/blockchain"
+      ],
+      "@blockchain/*": [
+        "./src/app/blockchain/*"
+      ],
+      "@assets": [
+        "./assets"
+      ],
+      "@assets/*": [
+        "./assets/*"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "svg.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
