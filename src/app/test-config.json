@@ -1,0 +1,105 @@
+{
+  "assets": [
+    {
+      "name": "Ether",
+      "symbol": "ETH",
+      "icon": "/eth.png",
+      "balance": "0 ETH",
+      "value": "0",
+      "assetId": "0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07",
+      "amount": ""
+    },
+    {
+      "name": "Tether USD",
+      "symbol": "USDT",
+      "icon": "/usdt.png",
+      "balance": "0 USDT",
+      "value": "0",
+      "assetId": "0x4925c576264f2262ea001449988dcb4886401fe1155fc0446b8f64a549709c78",
+      "amount": ""
+    },
+    {
+      "name": "Sway Farm Coin",
+      "symbol": "FARM",
+      "icon": "/stable.svg",
+      "balance": "0 FARM",
+      "value": "0",
+      "assetId": "0x2a0d0ed9d2217ec7f32dcd9a1902ce2a66d68437aeff84e3a3cc8bebee0d2eea",
+      "amount": ""
+    },
+    {
+      "name": "USD Coin",
+      "symbol": "USDC",
+      "icon": "/usdc.png",
+      "balance": "0 USDC",
+      "value": "0",
+      "assetId": "0x6313392908fe2ee5f799c4ee15020cf2609cb101beee7dc8cdfd250dba90ffc0",
+      "amount": ""
+    },
+    {
+      "name": "stETH",
+      "symbol": "stETH",
+      "icon": "/weth.png",
+      "balance": "0 stETH",
+      "value": "0",
+      "assetId": "0x714a66e639b5f73eb6780ae81942d25a97c30ba5c702f853ba74d1e8c620ce24",
+      "amount": ""
+    },
+    {
+      "name": "Wrapped Ether",
+      "symbol": "WETH",
+      "icon": "/weth.png",
+      "balance": "0 WETH",
+      "value": "0",
+      "assetId": "0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07",
+      "amount": ""
+    },
+    {
+      "name": "Dai",
+      "symbol": "DAI",
+      "icon": "/dai.png",
+      "balance": "0 DAI",
+      "value": "0",
+      "assetId": "0x4925c576264f2262ea001449988dcb4886401fe1155fc0446b8f64a549709c78",
+      "amount": ""
+    },
+    {
+      "name": "Fork USDC",
+      "symbol": "FUSDC",
+      "icon": "/stable.svg",
+      "balance": "0 USDC",
+      "value": "0",
+      "assetId": "0x336b7c06352a4b736ff6f688ba6885788b3df16e136e95310ade51aa32dc6f05",
+      "amount": ""
+    },
+    {
+      "name": "Wrapped Bitcoin",
+      "symbol": "WBTC",
+      "icon": "/wbtc.png",
+      "balance": "0 WBTC",
+      "value": "0",
+      "assetId": "0x38e4ca985b22625fff93205e997bfc5cc8453a953da638ad297ca60a9f2600bc",
+      "amount": ""
+    },
+    {
+      "name": "Fork ETH",
+      "symbol": "fETH",
+      "icon": "/weth.png",
+      "balance": "0 fETH",
+      "value": "0",
+      "assetId": "0x0b42cab6e68ce319ce5b4ace6e3f7c010ff1ceb4ae1484c1ee16e454413d2d11",
+      "amount": ""
+    }
+  ],
+  "popularAssets": [
+    "ETH",
+    "WETH",
+    "USDC",
+    "DAI",
+    "USDT",
+    "FUSDC",
+    "WBTC",
+    "FARM",
+    "fETH"
+  ]
+}
