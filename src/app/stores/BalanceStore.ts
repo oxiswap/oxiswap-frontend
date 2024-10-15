@@ -60,6 +60,10 @@ class BalanceStore {
     }
   };
 
+  getAllBalances = () => {
+    return this.balances;
+  };
+
   getNativeBalance = () => {
     const b = this.balances.get(ETH_ASSET_ID);
     if (b) {

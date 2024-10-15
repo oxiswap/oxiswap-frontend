@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Contract, Account } from 'fuels';
 import { FACTORY_ADDRESS } from '@constants/index';
-import FAC_ABI from '@constants/abi/fuelswap-factory-abi.json';
+import FAC_ABI from '@constants/abi/crypto-factory-abi.json';
 import { useStores } from '@stores/useStores';
 
 export const usePairInfo = (asset1: string, asset2: string) => {
@@ -30,7 +30,6 @@ export const usePairInfo = (asset1: string, asset2: string) => {
       };
 
       const pair = await factory.functions.get_pair(assetA, assetB).get();
-      console.log('get_pair', pair.value.bits);
 
       if (
         pair.value.bits ===

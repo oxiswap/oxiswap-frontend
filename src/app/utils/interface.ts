@@ -4,7 +4,7 @@ export const FUEL_PROVIDER_URL = 'https://testnet.fuel.network/v1/graphql';
 
 export const defaultETH: Asset = {
   name: 'Ether',
-  icon: '/eth.png',
+  icon: 'https://images.oxiswap.com/assets/eth.png',
   symbol: 'ETH',
   assetId: '0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07',
   balance: '0 ETH',
@@ -37,6 +37,7 @@ export interface Asset {
   value: string;
   amount: string;
   popular?: string;
+  contractId?: string;
 }
 
 export interface ButtonProps {

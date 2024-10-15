@@ -6,9 +6,8 @@ export default async function SwapPageServer() {
   let assetConfig: AssetConfig;
 
   try {
-    assetConfig = await fetchTestAssetConfig();
-    // assetConfig = await fetchServerAssetConfig();
-    // console.log(assetConfig);
+    // assetConfig = await fetchTestAssetConfig();
+    assetConfig = await fetchServerAssetConfig();
   } catch (error) {
     console.error("Failed to fetch asset config:", error);
     assetConfig = { assets: [], popularAssets: [] }; 

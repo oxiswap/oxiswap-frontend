@@ -1,6 +1,5 @@
 'use client'
 
-import Image from "next/image";
 import MyPosition from "@components/Pool/MyPosition";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
