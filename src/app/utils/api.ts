@@ -1,8 +1,13 @@
 import { supabase, signInWithPassword } from '@utils/supabaseClient';
 import assetConfig from '@src/app/test-config.json';
-import { PoolButtonProps, Asset } from './interface';
+import { PoolButtonProps, Asset, FUEL_PROVIDER_URL } from './interface';
 import BN from "@utils/BN";
-import { AssetConfig } from "@utils/interface";
+import { AssetConfig, ETH_ASSET_ID } from "@utils/interface";
+import { CryptoPair } from '@blockchain/CryptoPair';
+import { Provider } from 'fuels';
+import { sortAsset, formatUnits } from '@utils/helpers';
+import axios from 'axios';
+import { CryptoFactory } from '@blockchain/CryptoFactory';
 
 interface PoolAsset {
   name: string;
@@ -38,6 +43,7 @@ interface RawPoolData {
   asset_2_num?: string;
   pool_assetId: string;
   tvl?: string;
+  apr?: string;
   type: 'StablePool' | 'VolatilePool';
   volume?: string;
 }
@@ -66,7 +72,7 @@ function convertPoolData(item: RawPoolData): Pool {
   }
 
   return {
-    apr: "-", 
+    apr: item.apr || "-", 
     assets,
     poolAssetId: item.pool_assetId,
     tvl: item.tvl || "-",
@@ -77,8 +83,7 @@ function convertPoolData(item: RawPoolData): Pool {
 
 export async function fetchPools(): Promise<Pool[]> {
   try {
-    const { data, error } = await supabase.from('oxiswap_pools').select();
-
+    const { data, error } = await supabase.from('oxiswap_pools').select('*, updated_at').order('updated_at', { ascending: false });
     if (error) {
       throw error;
     }
@@ -114,7 +119,7 @@ export async function fetchTestAssetConfig() {
 }
 
 export const fetchServerAssetConfig = async (): Promise<AssetConfig> =>  {
-  const { data, error } = await supabase.from('fuel_verfied_assets').select('name, icon, symbol, assetId, popular');
+  const { data, error } = await supabase.from('fuel_verfied_assets').select('name, icon, symbol, assetId, contractId, popular').order('updated_at', { ascending: false });
   if (error) {
     console.error('Error fetching pools:', error);
     return { assets: [], popularAssets: [] };
@@ -137,6 +142,7 @@ const transformAssets = (data: any[]): AssetConfig  => {
           value: "0",
           assetId: asset.assetId,
           amount: "",
+          contractId: asset.contractId,
           popular: asset.popular
       });
   });
@@ -150,10 +156,94 @@ const transformAssets = (data: any[]): AssetConfig  => {
   };
 };
 
+async function getEthPrice() {
+  const response = await axios.get(
+    `https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true&include_last_updated_at=true`,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    }
+  );
+
+  return response.data.ethereum.usd;
+}
+
+async function getAssetPriceAndTVl(one: string, two: string) {
+  const assetPriceInEth = parseFloat(one) / parseFloat(two);
+  // eth price
+  const ethPriceInUsd =await getEthPrice();
+  const assetPriceInUsd = assetPriceInEth * ethPriceInUsd; 
+  const tvl = (parseFloat(one) * ethPriceInUsd) + (parseFloat(two) * assetPriceInUsd);
+  // const dailyFees = 1000;
+  // const annualFees = dailyFees * 365;
+  // const apr = (annualFees / tvl) * 100;
+  const apr = 0;
+
+  return {tvl, apr, assetPriceInUsd};
+}
+
+async function getAssetsReserves(poolAssetId: string, asset0: string, asset1: string) {
+  let asset0num: string = "";
+  let asset1num: string = "";
+  const provider = await Provider.create(FUEL_PROVIDER_URL);
+  const pairContract = new CryptoPair(provider);
+  const reserves = await pairContract.getReserves(poolAssetId);
+  const asset0_bits = { bits: asset0 };
+  const asset1_bits = { bits: asset1};
+  const [new_asset0] = sortAsset(asset0_bits, asset1_bits);
+  if (asset0 === new_asset0.bits) {
+    asset0num = formatUnits(reserves.value[0].toString());
+    asset1num = formatUnits(reserves.value[1].toString());
+  } else {
+    asset0num = formatUnits(reserves.value[1].toString());
+    asset1num = formatUnits(reserves.value[0].toString());
+    }
+  return {asset0num, asset1num};
+}
+
+async function calculateTVLAndAPR(insertData: any) {
+  // set tvl and apr
+  let tvl: number = 0;
+  let apr: number = 0;
+  if (insertData.asset_0 === ETH_ASSET_ID) {
+   const result = await getAssetPriceAndTVl(insertData.asset_0_num, insertData.asset_1_num);
+   tvl = result.tvl;
+   apr = result.apr;
+  } else if (insertData.asset_1 === ETH_ASSET_ID) {
+   const result = await getAssetPriceAndTVl(insertData.asset_1_num, insertData.asset_0_num);
+   tvl = result.tvl;
+   apr = result.apr;
+  } else {
+    let asset0Price: number = 0;
+    let asset1Price: number = 0;
+    const provider = await Provider.create(FUEL_PROVIDER_URL);
+    const factory = new CryptoFactory(provider);
+    const asset0Rs = await factory.getPair(insertData.asset_0, ETH_ASSET_ID);
+    const asset1Rs = await factory.getPair(insertData.asset_1, ETH_ASSET_ID);
+    if (asset0Rs.isPair) {
+      const reserves = await getAssetsReserves(asset0Rs.pair, insertData.asset_0, ETH_ASSET_ID);
+      const result = await getAssetPriceAndTVl(reserves.asset1num, reserves.asset0num);
+      asset0Price = result.assetPriceInUsd;
+    }
+    if (asset1Rs.isPair) {
+      const reserves = await getAssetsReserves(asset1Rs.pair, insertData.asset_1, ETH_ASSET_ID);
+      const result = await getAssetPriceAndTVl(reserves.asset1num, reserves.asset0num);
+      asset1Price = result.assetPriceInUsd;
+    }
+    tvl = (parseFloat(insertData.asset_0_num) * asset0Price) + (parseFloat(insertData.asset_1_num) * asset1Price);
+    // const dailyFees = 1000;
+    // const annualFees = dailyFees * 365;
+    // apr = (annualFees / tvl) * 100;
+  }
+  return {tvl, apr};
+}
+
+
 export async function removeLiquidity(pool: PoolButtonProps, onlyKey: string, removeAllLiquidity: boolean, amounts: string[]) {
-
+  // sign supabase with password
   await signInWithPassword();
-
   const { data: existingData, error: selectError } = await supabase
     .from('oxiswap_pool_info')
     .select()
@@ -182,13 +272,15 @@ export async function removeLiquidity(pool: PoolButtonProps, onlyKey: string, re
         updatedData = {
           ...existingRecord,
           asset_0_num: new BN(existingRecord.asset_0_num).sub(new BN(amounts[0])).toFixed(9),
-          asset0_1_num: new BN(existingRecord.asset_1_num).sub(new BN(amounts[1])).toFixed(9)
+          asset0_1_num: new BN(existingRecord.asset_1_num).sub(new BN(amounts[1])).toFixed(9),
+          updated_at: new Date().toISOString()
         };
       } else {
         updatedData = {
           ...existingRecord,
           asset_0_num: new BN(existingRecord.asset_0_num).sub(new BN(amounts[1])).toFixed(9),
-          asset_1_num: new BN(existingRecord.asset_1_num).sub(new BN(amounts[0])).toFixed(9)
+          asset_1_num: new BN(existingRecord.asset_1_num).sub(new BN(amounts[0])).toFixed(9),
+          updated_at: new Date().toISOString()
         };
       }
       const { error: updateError } = await supabase
@@ -205,7 +297,7 @@ export async function removeLiquidity(pool: PoolButtonProps, onlyKey: string, re
 }
 
 export async function addLiquidity(assets: Asset[], insertData: any, isPair: boolean, onlyKey: string) {
-  
+  // sign supabase with password
   await signInWithPassword();
   if (isPair) {
     const { data: existingData, error: selectError } = await supabase
@@ -225,13 +317,15 @@ export async function addLiquidity(assets: Asset[], insertData: any, isPair: boo
         updatedData = {
           ...existingRecord,
           asset_0_num: new BN(existingRecord.asset_0_num).add(new BN(insertData.asset_0_num)).toFixed(9),
-          asset_1_num: new BN(existingRecord.asset_1_num).add(new BN(insertData.asset_1_num)).toFixed(9)
+          asset_1_num: new BN(existingRecord.asset_1_num).add(new BN(insertData.asset_1_num)).toFixed(9),
+          updated_at: new Date().toISOString()
         };
       } else {
         updatedData = {
           ...existingRecord,
           asset_0_num: new BN(existingRecord.asset_0_num).add(new BN(insertData.asset_1_num)).toFixed(9),
-          asset_1_num: new BN(existingRecord.asset_1_num).add(new BN(insertData.asset_0_num)).toFixed(9)
+          asset_1_num: new BN(existingRecord.asset_1_num).add(new BN(insertData.asset_0_num)).toFixed(9),
+          updated_at: new Date().toISOString()
         };
       }
       const { error: updateError } = await supabase
@@ -251,11 +345,49 @@ export async function addLiquidity(assets: Asset[], insertData: any, isPair: boo
     }
   } else{
     await supabase
-      .from('oxiswap_pools')
-      .insert(insertData)
-
-    await supabase
       .from('oxiswap_pool_info')
       .insert(insertData) 
+
+    await supabase
+      .from('oxiswap_pools')
+      .insert(insertData)
   }
+}
+
+export async function updatePoolTvlAndApr(pair: string) {
+  // sign supabase with password
+  await signInWithPassword();
+  const { data: existingData, error: selectError } = await supabase
+    .from('oxiswap_pools')
+    .select()
+    .eq('pool_assetId', pair)
+  
+    if (selectError) {
+      console.error("Error selecting data:", selectError);
+      throw selectError; 
+    }
+
+    if (existingData && existingData.length > 0) {
+      const resulet = await getAssetsReserves(pair, existingData[0].asset_0, existingData[0].asset_1);
+      existingData[0].asset_0_num = resulet.asset0num;
+      existingData[0].asset_1_num = resulet.asset1num;
+      const {tvl, apr} = await calculateTVLAndAPR(existingData[0]);
+      
+      const updatedData = {
+        ...existingData[0],
+        tvl: tvl.toFixed(2),
+        apr: `${apr.toFixed(2)}%`,
+        updated_at: new Date().toISOString()
+      }
+      
+      const { error: updateError } = await supabase
+      .from('oxiswap_pools')
+      .update(updatedData)
+      .eq('pool_assetId', pair);
+
+      if (updateError) {
+        console.error("Error updating data:", updateError);
+        throw updateError; 
+      }
+    }
 }

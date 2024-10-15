@@ -15,7 +15,7 @@ import { useCalculateAssetAmounts } from "@hooks/useCalculateAssetAmounts";
 import { CryptoFactory } from '@src/app/blockchain';
 import RemoveSliderDiv from "./RemoveSliderDiv";
 import RemoveAssetDiv from "./RemoveAssetDiv";
-import { removeLiquidity } from "@utils/api";
+import { removeLiquidity, updatePoolTvlAndApr } from "@utils/api";
 
 const RemoveLiquidityDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observer(({ pool }) => {
   const router = useRouter();
@@ -117,12 +117,11 @@ const RemoveLiquidityDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observ
       const { pair } = await factory.getPair(pool.assets[0].assetId, pool.assets[1].assetId);
       const onlyKey = accountStore.address + pair;
       // supabase
-      removeLiquidity(pool, onlyKey, poolStore.removeAllLiquidity, amounts);
-
+      await removeLiquidity(pool, onlyKey, poolStore.removeAllLiquidity, amounts);
+      await updatePoolTvlAndApr(pair);
       poolStore.setRemoveInitialization();
 
     } else {
-      console.log(result.success);
       notificationStore.setNotificationVisible('removeLiquidity', false);
       setIsSpin(false);
     }

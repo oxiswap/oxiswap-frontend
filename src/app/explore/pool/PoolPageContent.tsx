@@ -7,14 +7,21 @@ import { observer } from "mobx-react";
 import { useStores } from "@stores/useStores";
 import { List } from 'antd';
 import { PoolButton } from "./PoolButton";
-
+import { fetchPools } from "@utils/api";
 
 export const PoolPageContent = observer(({ initialPools }: { initialPools: PoolButtonProps[] }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { poolStore } = useStores();
-
+  
   useEffect(() => {
-    poolStore.setPoolButtonProps(initialPools);
+    async function fetchPoolsData() {
+      setIsLoading(true);
+      const pools = await fetchPools();
+      poolStore.setPoolButtonProps(pools);
+      setIsLoading(false);
+    }
+    fetchPoolsData();
+    // poolStore.setPoolButtonProps(initialPools);
   }, [initialPools, poolStore]);
 
   const handleOnClick = useCallback((pool: PoolButtonProps) => {

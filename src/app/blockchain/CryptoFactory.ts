@@ -1,6 +1,6 @@
 import { Contract, Account, Provider } from 'fuels';
 import { FACTORY_ADDRESS } from '@constants/index';
-import FAC_ABI from '@constants/abi/fuelswap-factory-abi.json';
+import FAC_ABI from '@constants/abi/crypto-factory-abi.json';
 
 
 export class CryptoFactory {
@@ -21,7 +21,7 @@ export class CryptoFactory {
     try {
       const pairResult = await this.contract.functions.get_pair(asset0, asset1).get();
       const pairAddress = pairResult.value.bits;
-
+      
       if (pairAddress === '0x0000000000000000000000000000000000000000000000000000000000000000') {
         return { isPair: false, pair: '0x0000000000000000000000000000000000000000000000000000000000000000' };
       }
@@ -44,4 +44,7 @@ export class CryptoFactory {
     return await this.contract.functions.all_pairs_length().get();
   }
 
+  async getAssets(pair: {bits: string}) {
+    return await this.contract.functions.get_assets(pair).get();
+  }
 }

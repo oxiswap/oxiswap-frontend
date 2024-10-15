@@ -1,10 +1,9 @@
 import { Contract, Account, bn, BN, Provider } from 'fuels';
 import { ROUTER_ADDRESS } from '@constants/index';
-import ROUTER_ABI from '@constants/abi/fuelswap-router-abi.json';
+import ROUTER_ABI from '@constants/abi/crypto-router-abi.json';
 import { CryptoPair } from './CryptoPair';
 import { CryptoFactory } from './CryptoFactory';
 import { Asset } from '@utils/interface';
-import CBN from '@utils/BN';
 
 export class CryptoRouter {
   private contract: Contract;
@@ -60,8 +59,8 @@ export class CryptoRouter {
     const now = new BN(Math.round(new Date().getTime() / 1000));
     const time = now.add(new BN(2).pow(new BN(62))).add(new BN(15 * 60));
 
-    const to = { bits: this.wallet.address.toB256() };
-
+    const account = { bits: this.wallet.address.toB256() };
+    const to = { Address: account };
     const pair = new CryptoPair(this.wallet);
 
     try {
@@ -121,7 +120,8 @@ export class CryptoRouter {
     const now = new BN(Math.round(new Date().getTime() / 1000));
     const time = now.add(new BN(2).pow(new BN(62))).add(new BN(15 * 60));
 
-    const to = { bits: this.wallet.address.toB256() };
+    const account = { bits: this.wallet.address.toB256() };
+    const to = { Address: account };
     const pair = new CryptoPair(this.wallet);
 
     try {
@@ -197,6 +197,7 @@ export class CryptoRouter {
 
   async addLiquidity(assets: Asset[], amounts: string[], onSubmitted?: () => void) {
     const account = { bits: this.wallet.address.toB256() };
+    const to = { Address: account };    
     const pair = new CryptoPair(this.wallet);
     const factory = new CryptoFactory(this.wallet);
 
@@ -224,7 +225,7 @@ export class CryptoRouter {
           formattedAmount1Desired,
           formattedAmount0Min,
           formattedAmount1Min,
-          account,
+          to,
           deadline
         )
         .addContracts([pair.instance, factory.instance])
@@ -258,17 +259,20 @@ export class CryptoRouter {
     const pair = new CryptoPair(this.wallet);
     const factory = new CryptoFactory(this.wallet);
     const account = { bits: this.wallet.address.toB256() };
-
+    const to = { Address: account }; 
     const formatedDepositAmount0 = bn.parseUnits(amounts[0]);
     const formatedDepositAmount1 = bn.parseUnits(amounts[1]);
+    console.log(formatedDepositAmount0.toString(), formatedDepositAmount1.toString());
     const asset0 = { bits: assets[0].assetId };
     const asset1 = { bits: assets[1].assetId };
-    const amount0Min = formatedDepositAmount0.toNumber() * 0.5;
-    const amount1Min = formatedDepositAmount1.toNumber() * 0.5;
+    // const amount0Min = formatedDepositAmount0.toNumber() * 0.5;
+    // const amount1Min = formatedDepositAmount1.toNumber() * 0.5;
 
-    const formattedAmount0Min = bn(amount0Min);
-    const formattedAmount1Min = bn(amount1Min);
-
+    // const formattedAmount0Min = bn(amount0Min);
+    // const formattedAmount1Min = bn(amount1Min);
+    const formattedAmount0Min = formatedDepositAmount0.mul(5).div(10);
+    const formattedAmount1Min = formatedDepositAmount1.mul(5).div(10);
+    console.log(new BN(formattedAmount0Min).toString(), new BN(formattedAmount1Min).toString());
     const now = new BN(Math.round(new Date().getTime() / 1000));
     const deadline = now.add(new BN(2).pow(new BN(62))).add(new BN(15 * 60));
     
@@ -288,7 +292,7 @@ export class CryptoRouter {
             formatedDepositAmount1,
             formattedAmount0Min,
             formattedAmount1Min,
-            account,
+            to,
             deadline
           )
           .addContracts([pair.instance, factory.instance]),
@@ -327,6 +331,7 @@ export class CryptoRouter {
     const pair = new CryptoPair(this.wallet);
     const factory = new CryptoFactory(this.wallet);
     const account = { bits: this.wallet.address.toB256() };
+    const to = { Address: account };  
 
     const formatedDepositAmount0 = bn.parseUnits(amounts[0]);
     const formatedDepositAmount1 = bn.parseUnits(amounts[1]);
@@ -356,7 +361,7 @@ export class CryptoRouter {
           formatedDepositAmount1,
           formattedAmount0Min,
           formattedAmount1Min,
-          account,
+          to,
           deadline
         )
         .addContracts([pair.instance, factory.instance]),
@@ -368,6 +373,8 @@ export class CryptoRouter {
 
   async removeLiquidity(poolAssetId: string, assets: Asset[], amounts: string[], onSubmitted?: () => void ) {
     const account = { bits: this.wallet.address.toB256() };
+    const to = { Address: account };  
+
     const pair = new CryptoPair(this.wallet);
     const factory = new CryptoFactory(this.wallet);
 
@@ -392,7 +399,7 @@ export class CryptoRouter {
           formatedLiquidity,
           formattedAmount0Min,
           formattedAmount1Min,
-          account,
+          to,
           deadline
         )
         .addContracts([pair.instance, factory.instance])

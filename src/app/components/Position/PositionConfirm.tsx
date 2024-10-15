@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import React, { useState, useEffect, useMemo } from 'react';
 import LiquidityButton from '@components/Pool/LiquidityButton';
-import { PositionConfirmProps } from '@utils/interface';
+import { PositionConfirmProps} from '@utils/interface';
 import useResponsive from '@hooks/useResponsive';
 import { observer } from 'mobx-react';
 import { useStores } from '@stores/useStores';
@@ -10,7 +10,7 @@ import { Account } from 'fuels';
 import { LoadingOutlined } from '@ant-design/icons';
 import { Spin } from 'antd';
 import { CryptoFactory } from '@src/app/blockchain';
-import { addLiquidity } from "@utils/api";
+import { addLiquidity, updatePoolTvlAndApr } from "@utils/api";
 
 const AssetDiv = observer(() => {
   const { positionStore, oracleStore } = useStores();
@@ -73,14 +73,6 @@ const PositionConfirm: React.FC<Pick<PositionConfirmProps, 'onAction'>> = observ
 
     const addMessage = `Add liquidity to the ${positionStore.getAmount(0)} ${assets[0].symbol} / ${positionStore.getAmount(1)} ${assets[1].symbol} pool`;
 
-    const handleAdd = () => {
-      notificationStore.addNotification({
-        open: true,
-        type: 'submitted',
-        message: addMessage
-      });
-    }
-
     useEffect(() => {
       setIsVisible(true);
     }, []);
@@ -119,7 +111,7 @@ const PositionConfirm: React.FC<Pick<PositionConfirmProps, 'onAction'>> = observ
         positionStore.setIsPreview(false);
         
         const { pair } = await factory.getPair(assets[0].assetId, assets[1].assetId);
-        
+
         let insertData;
         if (positionStore.poolType === 'VolatilePool') {
           insertData = {
@@ -134,7 +126,7 @@ const PositionConfirm: React.FC<Pick<PositionConfirmProps, 'onAction'>> = observ
             asset_1_num: positionStore.getAmount(1),
             pool_assetId: pair,
             only_key: accountStore.address + pair,
-            type: positionStore.poolType,
+            type: positionStore.poolType
           }
         } else {
           insertData = {
@@ -153,13 +145,13 @@ const PositionConfirm: React.FC<Pick<PositionConfirmProps, 'onAction'>> = observ
             asset_2_num: positionStore.addLiquidityAmounts[2],
             pool_assetId: pair,
             only_key: accountStore.address + pair,
-            type: positionStore.poolType,
+            type: positionStore.poolType
           }
         }
-
         const onlyKey = accountStore.address + pair;
         // supabase
-        addLiquidity(assets, insertData, isPair, onlyKey);
+       await addLiquidity(assets, insertData, isPair, onlyKey);
+       await updatePoolTvlAndApr(pair);
         // form input initialize
         await new Promise(resolve => setTimeout(resolve, 3000));
         positionStore.addLiquidityAssets.map((_, index) => {

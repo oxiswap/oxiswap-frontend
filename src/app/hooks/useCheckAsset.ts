@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Asset, IAsset, ZERO_ADDRESS } from '@utils/interface';
-import { Src20Standard } from '@blockchain';
+import { Src20Standard } from '@blockchain/Src20Standard';
 import { useStores } from '@stores/useStores';
 import { Account, createAssetId, isB256 } from 'fuels';
 

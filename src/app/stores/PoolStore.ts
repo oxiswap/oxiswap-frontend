@@ -17,7 +17,7 @@ class PoolStore {
     apr: "",
     poolAssetId: "",
   };
-  @observable poolButtonProps: PoolButtonProps[] = [] || undefined;
+  @observable poolButtonProps: PoolButtonProps[] = [];
   @observable removeAllLiquidity: boolean = false;
   @observable reserves: string[] = [];
   @observable removeReceives: string[] = [];

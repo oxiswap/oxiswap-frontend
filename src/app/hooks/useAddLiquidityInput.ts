@@ -3,11 +3,9 @@ import { useStores } from '@stores/useStores';
 import { CryptoRouter } from '@blockchain/CryptoRouter';
 import { CryptoFactory } from '@blockchain/CryptoFactory';
 import { CryptoPair } from '@blockchain/CryptoPair';
-import { useOracle } from '@hooks/useOracle';
 import { IntervalUpdater } from '@utils/IntervalUpdater';
-import { Account, AssetId } from 'fuels';
-import { debounce } from 'lodash';
-import { ZERO_ADDRESS, Asset } from '@utils/interface';
+import { Account } from 'fuels';
+import { ZERO_ADDRESS } from '@utils/interface';
 import BN from '@utils/BN';
 import estimateLiquidityAmount, { estimateAmount } from '@hooks/useEstimateLiquidityAmount';
 import { sortAsset, formatUnits } from '@utils/helpers';
@@ -63,7 +61,7 @@ export const useAddLiquidityInput = (assetIndex: number) => {
         let newAmounts = [...positionStore.addLiquidityAmounts];
         let liquidityAmount = new BN(0);
         if (positionStore.poolType === 'StablePool') {
-          // 这里实现StablePool的逻辑
+          //TODO:StablePool
           newAmounts = [currentAmount];
         } else {
           if (inputValue === '') return;
@@ -148,7 +146,7 @@ export const useAddLiquidityInput = (assetIndex: number) => {
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     let newAmount = e.target.value.replace(/[^0-9.]/g, '');
-    
+
     if (newAmount.split('.').length > 2) {
       newAmount = newAmount.slice(0, newAmount.lastIndexOf('.') + 1);
     }
@@ -180,7 +178,7 @@ export const useAddLiquidityInput = (assetIndex: number) => {
         if (assets.length === (positionStore.poolType === 'StablePool' ? 3 : 2)) {
           buttonStore.setPositionButtonName('Preview');
           buttonStore.setPositionButtonDisabled(false);
-          buttonStore.setPositionButtonClassName(`bg-oxi-bg-03 text-oxi-text-01 ${positionStore.isPosition ? "border border-oxi-text-01" : ""}`);
+          buttonStore.setPositionButtonClassName('bg-gradient-to-r from-blue-500 to-blue-700 text-white hover:from-blue-600 hover:to-blue-800 transition-all duration-300');
         }
       }
     }

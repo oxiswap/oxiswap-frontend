@@ -1,5 +1,5 @@
 import { Contract, Account, Provider } from 'fuels';
-import PAIR_ABI from '@constants/abi/fuelswap-pairs-abi.json';
+import PAIR_ABI from '@constants/abi/crypto-pairs-abi.json';
 import { PAIR_ADDRESS } from '@constants/index';
 
 

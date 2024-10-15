@@ -3,7 +3,6 @@ import { createClient, Session} from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
 
 const email = process.env.NEXT_PUBLIC_SUPABASE_EMAIL || '';
 const password = process.env.NEXT_PUBLIC_SUPABASE_EMAIL_PASSWORD || '';
