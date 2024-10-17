@@ -21,7 +21,7 @@ export const useSwapInput = (isFromInput: boolean) => {
   const [src20, setSrc20] = useState<Src20Standard | null>(null);
   const { swapStore, balanceStore, accountStore, buttonStore, settingStore } = useStores();
   const asset = isFromInput ? swapStore.fromAsset : swapStore.toAsset;
-  const currentBalance = balanceStore.getBalance(asset.assetId);
+  const currentBalance = balanceStore.getBalance(asset.assetId, asset.decimals);
 
   const isZeroAddress = swapStore.fromAsset.assetId === ZERO_ADDRESS || swapStore.toAsset.assetId === ZERO_ADDRESS;
   
@@ -189,7 +189,7 @@ export const useSwapInput = (isFromInput: boolean) => {
         return;
       }
 
-      const currentBalance = BN.parseUnits(balanceStore.getBalance(swapStore.fromAsset.assetId));
+      const currentBalance = BN.parseUnits(balanceStore.getBalance(swapStore.fromAsset.assetId, swapStore.fromAsset.decimals));
       const formatFromAmount = BN.parseUnits(fromAmount);
       const formatToAmount = BN.parseUnits(toAmount);
     

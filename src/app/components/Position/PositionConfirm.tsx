@@ -100,7 +100,13 @@ const PositionConfirm: React.FC<Pick<PositionConfirmProps, 'onAction'>> = observ
         notificationStore.transitionNotificationState(notificationId, 'submitted');
       }
 
-      const results = await router.addLiquidityMultiCall(assets, [positionStore.getAmount(0), positionStore.getAmount(1)], handleAddLiquidity);
+      let results;
+      try {
+         results = await router.addLiquidityMultiCall(assets, [positionStore.getAmount(0), positionStore.getAmount(1)], handleAddLiquidity);
+      } catch (error) {
+        const newAssets = [assets[1], assets[0]];
+        results = await router.addLiquidityMultiCall(newAssets, [positionStore.getAmount(1), positionStore.getAmount(0)], handleAddLiquidity);
+      }
       
       if (results.success) {
         notificationStore.addNotification({

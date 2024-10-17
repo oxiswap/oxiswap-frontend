@@ -14,8 +14,8 @@ import { Account } from 'fuels';
 const RemoveSliderDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observer(({ pool }) => {
   const [sliderValue, setSliderValue] = useState(0);
   const { poolStore, balanceStore, oracleStore, accountStore } = useStores();
-  const balance = balanceStore.getBalance(pool.poolAssetId);
-  const exactBalance = balanceStore.getExactBalance(pool.poolAssetId);
+  const balance = balanceStore.getBalance(pool.poolAssetId, 9);
+  const exactBalance = balanceStore.getExactBalance(pool.poolAssetId, 9);
   
 
   const handleGetReceices = async () => {

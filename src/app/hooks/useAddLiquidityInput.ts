@@ -158,7 +158,7 @@ export const useAddLiquidityInput = (assetIndex: number) => {
     }
 
     const asset = assets[assetIndex];
-    const currentBalance = balanceStore.getBalance(asset.assetId);
+    const currentBalance = balanceStore.getBalance(asset.assetId, asset.decimals);
 
     positionStore.setAmount(newAmount, assetIndex);
     setLastInputIndex(assetIndex);
@@ -208,13 +208,13 @@ export const useAddLiquidityInput = (assetIndex: number) => {
     } else if (
       newAmounts && newAmounts.every(
         (amount, index) => 
-          new BN(amount).gt(BN.ZERO) && new BN(amount).lt(new BN(balanceStore.getBalance(assets[index].assetId))) 
+          new BN(amount).gt(BN.ZERO) && new BN(amount).lt(new BN(balanceStore.getBalance(assets[index].assetId, assets[index].decimals))) 
       )
     ) {
       buttonStore.setPositionButtonName('Preview');
       buttonStore.setPositionButtonDisabled(false);
       buttonStore.setPositionButtonClassName('bg-gradient-to-r from-blue-500 to-blue-700 text-white hover:from-blue-600 hover:to-blue-800 transition-all duration-300');
-    } else if (newAmounts && newAmounts.some((amount, index) => new BN(amount).gt(new BN(balanceStore.getBalance(assets[index].assetId))))) {
+    } else if (newAmounts && newAmounts.some((amount, index) => new BN(amount).gt(new BN(balanceStore.getBalance(assets[index].assetId, assets[index].decimals))))) {
       buttonStore.setPositionButtonName('Insufficient Asset Balance');
       buttonStore.setPositionButtonDisabled(true);
       buttonStore.setPositionButtonClassName(`bg-oxi-bg-03 text-oxi-text-01 ${positionStore.isPosition ? "border border-oxi-text-01" : ""}`);

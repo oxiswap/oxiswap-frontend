@@ -32,6 +32,10 @@
       "metadataTypeId": 4
     },
     {
+      "type": "str",
+      "concreteTypeId": "8c25cb3686462e9a86d2883c5688a22fe738b0bbc85f458d2d2b5f3f667c6d5a"
+    },
+    {
       "type": "struct events::DepositEvent",
       "concreteTypeId": "aeb9b947da259c606e2c25be1150e2150f609fe5f2ec593c9a7ebb771e4e7065",
       "metadataTypeId": 7
@@ -123,6 +127,10 @@
         },
         {
           "name": "InvalidAssetId",
+          "typeId": "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d"
+        },
+        {
+          "name": "InvalidPairAssetId",
           "typeId": "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d"
         },
         {
@@ -376,6 +384,33 @@
           "name": "payable",
           "arguments": []
         },
+        {
+          "name": "storage",
+          "arguments": [
+            "read",
+            "write"
+          ]
+        }
+      ]
+    },
+    {
+      "inputs": [
+        {
+          "name": "pool",
+          "concreteTypeId": "c0710b6731b1dd59799cf6bef33eee3b3b04a2e40e80a0724090215bbf2ca974"
+        },
+        {
+          "name": "to",
+          "concreteTypeId": "ab7cd04e05be58e3fc15d424c2c4a57f824a2a2d97d67252440a3925ebdc1335"
+        },
+        {
+          "name": "amount",
+          "concreteTypeId": "1506e6f44c1d6291cdf46395a8e573276a4fa79e8ace3fc891e092ef32d1b0a0"
+        }
+      ],
+      "name": "emergency_stop",
+      "output": "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d",
+      "attributes": [
         {
           "name": "storage",
           "arguments": [
@@ -649,6 +684,10 @@
       "concreteTypeId": "aeb9b947da259c606e2c25be1150e2150f609fe5f2ec593c9a7ebb771e4e7065"
     },
     {
+      "logId": "10098701174489624218",
+      "concreteTypeId": "8c25cb3686462e9a86d2883c5688a22fe738b0bbc85f458d2d2b5f3f667c6d5a"
+    },
+    {
       "logId": "10918704871079408520",
       "concreteTypeId": "9787083b0003f388ec6bf30609ff6a10c76fada67314a162841a445b07a17168"
     }
@@ -658,7 +697,7 @@
     {
       "name": "ETH",
       "concreteTypeId": "c0710b6731b1dd59799cf6bef33eee3b3b04a2e40e80a0724090215bbf2ca974",
-      "offset": 58760
+      "offset": 60944
     }
   ]
 }

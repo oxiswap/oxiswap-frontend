@@ -27,6 +27,7 @@ const MultiAssetInputDiv: React.FC<Pick<PoolInfoProps, 'assets'> & { onAmountsCh
             icon={asset.icon} 
             symbol={asset.symbol} 
             assetId={asset.assetId}
+            decimals={asset.decimals}
             assetIndex={index} 
             // onAmountChange={handleAmountChange(index)}
           />

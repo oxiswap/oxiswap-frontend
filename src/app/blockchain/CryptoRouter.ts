@@ -262,7 +262,6 @@ export class CryptoRouter {
     const to = { Address: account }; 
     const formatedDepositAmount0 = bn.parseUnits(amounts[0]);
     const formatedDepositAmount1 = bn.parseUnits(amounts[1]);
-    console.log(formatedDepositAmount0.toString(), formatedDepositAmount1.toString());
     const asset0 = { bits: assets[0].assetId };
     const asset1 = { bits: assets[1].assetId };
     // const amount0Min = formatedDepositAmount0.toNumber() * 0.5;
@@ -272,7 +271,6 @@ export class CryptoRouter {
     // const formattedAmount1Min = bn(amount1Min);
     const formattedAmount0Min = formatedDepositAmount0.mul(5).div(10);
     const formattedAmount1Min = formatedDepositAmount1.mul(5).div(10);
-    console.log(new BN(formattedAmount0Min).toString(), new BN(formattedAmount1Min).toString());
     const now = new BN(Math.round(new Date().getTime() / 1000));
     const deadline = now.add(new BN(2).pow(new BN(62))).add(new BN(15 * 60));
     

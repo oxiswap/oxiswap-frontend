@@ -151,6 +151,42 @@
       "output": "1506e6f44c1d6291cdf46395a8e573276a4fa79e8ace3fc891e092ef32d1b0a0",
       "attributes": [
         {
+          "name": "doc-comment",
+          "arguments": [
+            " Get the number of all trading pairs"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns the total number of trading pairs created in the contract."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns:"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - The total number of trading pairs"
+          ]
+        },
+        {
           "name": "storage",
           "arguments": [
             "read"
@@ -177,6 +213,102 @@
       "output": "b760f44fa5965c2474a3b471467a22c43185152129295af588b022ae50b50903",
       "attributes": [
         {
+          "name": "doc-comment",
+          "arguments": [
+            " Checks the asset registry to verify whether the specified `pair` is a legitimate asset pair "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " and matches the given combination of `asset0` and `asset1`. "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " The function sorts the assets, generates a hash `salt`, and verifies if the `pair` is registered."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Additionally, it checks the validity of the `ContractId` and `sub_id` to prevent attacks using forged `AssetId`."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            ""
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Parameters:"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - `pair`: The `AssetId` of the asset pair to be validated."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - `asset0`: The `AssetId` of the first asset in the pair."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - `asset1`: The `AssetId` of the second asset in the pair."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            ""
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns:"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns `true` if the asset pair is valid, registered, and the `ContractId` and `sub_id` match the `pair`."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns `false` if the validation fails, the asset pair is not registered, or the `ContractId` and `sub_id` do not match."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            ""
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Errors:"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Throws `FactoryErr::IdenticalAddresses` if `asset0` and `asset1` are the same."
+          ]
+        },
+        {
           "name": "storage",
           "arguments": [
             "read"
@@ -198,6 +330,48 @@
       "name": "constructor",
       "output": "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d",
       "attributes": [
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Contract constructor"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Initializes the contract by setting the fee receiver address, pool contract ID, and owner address. Ensures the contract is initialized only once."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Parameters:"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - `fee_to`: Address to receive trading fees"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - `pool`: ContractId of the pool contract"
+          ]
+        },
         {
           "name": "storage",
           "arguments": [
@@ -222,6 +396,66 @@
       "output": "c0710b6731b1dd59799cf6bef33eee3b3b04a2e40e80a0724090215bbf2ca974",
       "attributes": [
         {
+          "name": "doc-comment",
+          "arguments": [
+            " Create a new trading pair"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Creates a new trading pair for the given `asset0` and `asset1`, registers it, and returns its `AssetId`."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Parameters:"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - `asset0`: AssetId of the first asset"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - `asset1`: AssetId of the second asset"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns:"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - The `AssetId` of the newly created trading pair"
+          ]
+        },
+        {
           "name": "storage",
           "arguments": [
             "read",
@@ -236,6 +470,42 @@
       "output": "f597b637c3b0f588fb8d7086c6f4735caa3122b85f0423b82e489f9bb58e2308",
       "attributes": [
         {
+          "name": "doc-comment",
+          "arguments": [
+            " Get the address receiving trading fees"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns the current address set to receive trading fees in the contract."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns:"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - The current fee receiver address"
+          ]
+        },
+        {
           "name": "storage",
           "arguments": [
             "read"
@@ -248,6 +518,42 @@
       "name": "fee_to_setter",
       "output": "f597b637c3b0f588fb8d7086c6f4735caa3122b85f0423b82e489f9bb58e2308",
       "attributes": [
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Get the owner address"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns the current owner of the contract (i.e., the address allowed to set the fee receiver)."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns:"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - The current owner address"
+          ]
+        },
         {
           "name": "storage",
           "arguments": [
@@ -266,6 +572,60 @@
       "name": "get_assets",
       "output": "d3ddf84f691d572b4313a7be3ae1d8b67fe9061c281ff6ae955e4c4441524f92",
       "attributes": [
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Retrieve the asset pair corresponding to a trading pair"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns the asset pair (i.e., `asset0` and `asset1`) corresponding to the given `AssetId` of the trading pair."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Parameters:"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - `pair`: AssetId of the trading pair"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns:"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - A tuple containing `asset0` and `asset1`, or zeros if not found"
+          ]
+        },
         {
           "name": "storage",
           "arguments": [
@@ -288,6 +648,66 @@
       "name": "get_pair",
       "output": "c0710b6731b1dd59799cf6bef33eee3b3b04a2e40e80a0724090215bbf2ca974",
       "attributes": [
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Retrieve the pair's AssetId for a given asset pair"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns the `AssetId` of the trading pair corresponding to the provided `asset0` and `asset1`."
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Parameters:"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - `asset0`: AssetId of the first asset"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - `asset1`: AssetId of the second asset"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " "
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " Returns:"
+          ]
+        },
+        {
+          "name": "doc-comment",
+          "arguments": [
+            " - The `AssetId` of the pair, or zero if not found"
+          ]
+        },
         {
           "name": "storage",
           "arguments": [

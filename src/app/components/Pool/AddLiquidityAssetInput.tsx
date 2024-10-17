@@ -6,9 +6,9 @@ import { debounce } from 'lodash';
 import { Asset } from "@utils/interface";
 import Image from "next/image";
 
-const AddLiquidityAssetInput: React.FC<Pick<Asset, 'icon' | 'symbol' | 'assetId'> & { assetIndex: number }> = observer(({ icon, symbol, assetId, assetIndex }) => {
+const AddLiquidityAssetInput: React.FC<Pick<Asset, 'icon' | 'symbol' | 'assetId' | 'decimals'> & { assetIndex: number }> = observer(({ icon, symbol, assetId, decimals, assetIndex }) => {
   const { balanceStore, accountStore, oracleStore, positionStore} = useStores();
-  const currentBalance = balanceStore.getBalance(assetId);
+  const currentBalance = balanceStore.getBalance(assetId, decimals);
 
   const { handleInputChange } = useAddLiquidityInput(assetIndex); 
   const debouncedHandleInputChange = useMemo(() => debounce(handleInputChange, 300), [handleInputChange]); 

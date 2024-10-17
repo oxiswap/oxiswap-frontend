@@ -119,7 +119,7 @@ export async function fetchTestAssetConfig() {
 }
 
 export const fetchServerAssetConfig = async (): Promise<AssetConfig> =>  {
-  const { data, error } = await supabase.from('fuel_verfied_assets').select('name, icon, symbol, assetId, contractId, popular').order('updated_at', { ascending: false });
+  const { data, error } = await supabase.from('fuel_verfied_assets').select('name, icon, symbol, assetId, decimals, contractId, popular').order('assetId', { ascending: false });
   if (error) {
     console.error('Error fetching pools:', error);
     return { assets: [], popularAssets: [] };
@@ -138,10 +138,9 @@ const transformAssets = (data: any[]): AssetConfig  => {
           name: asset.name,
           symbol: asset.symbol,
           icon: asset.icon,
-          balance: `0 ${asset.symbol}`,
-          value: "0",
+          value: '0',
           assetId: asset.assetId,
-          amount: "",
+          decimals: asset.decimals,
           contractId: asset.contractId,
           popular: asset.popular
       });
@@ -375,7 +374,7 @@ export async function updatePoolTvlAndApr(pair: string) {
       
       const updatedData = {
         ...existingData[0],
-        tvl: tvl.toFixed(2),
+        tvl: `$${tvl.toFixed(2)}`,
         apr: `${apr.toFixed(2)}%`,
         updated_at: new Date().toISOString()
       }
@@ -390,4 +389,25 @@ export async function updatePoolTvlAndApr(pair: string) {
         throw updateError; 
       }
     }
+}
+
+export async function addAsset(asset: Asset) {
+  // sign supabase with password
+  await signInWithPassword();
+
+  const { data: existingData, error: selectError } = await supabase
+    .from('fuel_verfied_assets')
+    .select()
+    .eq('assetId', asset.assetId) 
+
+  if (selectError) {
+    console.error("Error selecting data:", selectError);
+    throw selectError; 
+  }
+
+  if (!existingData || existingData.length === 0) {
+    await supabase
+    .from('fuel_verfied_assets')
+    .insert(asset)
+  }
 }

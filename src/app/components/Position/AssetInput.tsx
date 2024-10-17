@@ -9,10 +9,10 @@ import { debounce } from 'lodash';
 import { useAddLiquidityInput } from '@hooks/useAddLiquidityInput';
 import { Skeleton } from 'antd';
 
-const AssetInput: React.FC<Pick<Asset, 'symbol' | 'icon' | 'assetId'>  & { assetIndex: number}> = observer(({ symbol, icon, assetId, assetIndex}) => {
+const AssetInput: React.FC<Pick<Asset, 'symbol' | 'icon' | 'assetId' | 'decimals'>  & { assetIndex: number}> = observer(({ symbol, icon, assetId, decimals, assetIndex}) => {
   const [isLoading, setIsLoading] = useState(false);
   const {accountStore, positionStore, balanceStore, oracleStore} = useStores();
-  const currentBalance = balanceStore.getBalance(assetId);
+  const currentBalance = balanceStore.getBalance(assetId, decimals);
 
   const { handleInputChange } = useAddLiquidityInput(assetIndex); 
   const debouncedHandleInputChange = useMemo(() => debounce(handleInputChange, 300), [handleInputChange]); 
@@ -80,6 +80,7 @@ const MultiAssetInputDiv: React.FC<AssetInputProps> = observer(({ assets }) => {
             symbol={asset.symbol}
             icon={asset.icon}
             assetId={asset.assetId}
+            decimals={asset.decimals}
             assetIndex={assets.indexOf(asset)}
             // onAmountChange={handleAmountChange(assets.indexOf(asset))}
           />
