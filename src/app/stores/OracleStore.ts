@@ -1,8 +1,8 @@
 import { makeObservable, observable, action } from "mobx";
 
 class OracleStore {
-  @observable ethOraclePrice: string = "2400";
-
+  @observable ethOraclePrice: string = "0";
+  @observable assetPrices: string[] = [];
   constructor() {
     makeObservable(this);
   }
@@ -12,9 +12,13 @@ class OracleStore {
     this.ethOraclePrice = price;
   }
 
+  @action
+  setAssetPrices(price: string, index: number) {
+    this.assetPrices[index] = price;
+  }
 
-  getAssetPrice(assetId: string) {
-    return "0";
+  getAssetPrices(index: number) {
+    return this.assetPrices[index];
   }
 
   get ethPrice() {

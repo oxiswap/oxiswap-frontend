@@ -11,6 +11,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Spin } from 'antd';
 import { CryptoFactory } from '@src/app/blockchain';
 import { addLiquidity, updatePoolTvlAndApr } from "@utils/api";
+import { sortAsset } from '@utils/helpers';
 
 const AssetDiv = observer(() => {
   const { positionStore, oracleStore } = useStores();
@@ -36,7 +37,7 @@ const AssetDiv = observer(() => {
               {positionStore.getAmount(index)}
             </span>
             <span className="text-sm font-normal text-gray-400">
-              ${oracleStore.getAssetPrice(asset.assetId)}
+              ${oracleStore.getAssetPrices(index)}
             </span>
           </div>
         </div>
@@ -100,7 +101,13 @@ const PositionConfirm: React.FC<Pick<PositionConfirmProps, 'onAction'>> = observ
         notificationStore.transitionNotificationState(notificationId, 'submitted');
       }
 
-      const results = await router.addLiquidityMultiCall(assets, [positionStore.getAmount(0), positionStore.getAmount(1)], handleAddLiquidity);
+      let results;
+      try {
+         results = await router.addLiquidityMultiCall(assets, [positionStore.getAmount(0), positionStore.getAmount(1)], handleAddLiquidity);
+      } catch (error) {
+        const newAssets = [assets[1], assets[0]];
+        results = await router.addLiquidityMultiCall(newAssets, [positionStore.getAmount(1), positionStore.getAmount(0)], handleAddLiquidity);
+      }
       
       if (results.success) {
         notificationStore.addNotification({
@@ -112,21 +119,46 @@ const PositionConfirm: React.FC<Pick<PositionConfirmProps, 'onAction'>> = observ
         
         const { pair } = await factory.getPair(assets[0].assetId, assets[1].assetId);
 
+        const asset0_bits = { bits: assets[0].assetId };
+        const asset1_bits = { bits: assets[1].assetId};
+        const [new_asset0] = sortAsset(asset0_bits, asset1_bits);
+
         let insertData;
         if (positionStore.poolType === 'VolatilePool') {
-          insertData = {
-            address: accountStore.address,
-            asset_0_name: assets[0].symbol,
-            asset_0_icon: assets[0].icon,
-            asset_0: assets[0].assetId,
-            asset_0_num: positionStore.getAmount(0),
-            asset_1_name: assets[1].symbol,
-            asset_1: assets[1].assetId,
-            asset_1_icon: assets[1].icon,
-            asset_1_num: positionStore.getAmount(1),
-            pool_assetId: pair,
-            only_key: accountStore.address + pair,
-            type: positionStore.poolType
+          if (new_asset0.bits === assets[0].assetId) {
+            insertData = {
+              address: accountStore.address,
+              asset_0_name: assets[0].symbol,
+              asset_0_icon: assets[0].icon,
+              asset_0: assets[0].assetId,
+              asset_0_num: positionStore.getAmount(0),
+              asset_0_decimals: assets[0].decimals,
+              asset_1_name: assets[1].symbol,
+              asset_1: assets[1].assetId,
+              asset_1_icon: assets[1].icon,
+              asset_1_num: positionStore.getAmount(1),
+              asset_1_decimals: assets[1].decimals,
+              pool_assetId: pair,
+              only_key: accountStore.address + pair,
+              type: positionStore.poolType
+            }
+          } else {
+            insertData = {
+              address: accountStore.address,
+              asset_0_name: assets[1].symbol,
+              asset_0_icon: assets[1].icon,
+              asset_0: assets[1].assetId,
+              asset_0_num: positionStore.getAmount(1),
+              asset_0_decimals: assets[1].decimals,
+              asset_1_name: assets[0].symbol,
+              asset_1: assets[0].assetId,
+              asset_1_icon: assets[0].icon,
+              asset_1_num: positionStore.getAmount(0),
+              asset_1_decimals: assets[0].decimals,
+              pool_assetId: pair,
+              only_key: accountStore.address + pair,
+              type: positionStore.poolType
+            }
           }
         } else {
           insertData = {

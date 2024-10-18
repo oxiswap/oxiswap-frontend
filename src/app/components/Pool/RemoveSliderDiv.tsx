@@ -14,8 +14,8 @@ import { Account } from 'fuels';
 const RemoveSliderDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observer(({ pool }) => {
   const [sliderValue, setSliderValue] = useState(0);
   const { poolStore, balanceStore, oracleStore, accountStore } = useStores();
-  const balance = balanceStore.getBalance(pool.poolAssetId);
-  const exactBalance = balanceStore.getExactBalance(pool.poolAssetId);
+  const balance = balanceStore.getBalance(pool.poolAssetId, 9);
+  const exactBalance = balanceStore.getExactBalance(pool.poolAssetId, 9);
   
 
   const handleGetReceices = async () => {
@@ -80,7 +80,7 @@ const RemoveSliderDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observer(
         <Image src="/position.svg" alt="assetIcon" width={22} height={22} />
       </div>
       <div className="flex justify-between mt-2">
-        <span className="text-xs text-[#8f9ba7]">~${oracleStore.getAssetPrice(poolStore.poolAssetId)}</span>
+        <span className="text-xs text-[#8f9ba7]">~${oracleStore.getAssetPrices(0)}</span>
         <div className="flex items-center">
           <span className="text-xs text-[#8f9ba7] mr-2">{balance}</span>
           <Image src="/wallet.svg" alt="wallet" width={16} height={16} />

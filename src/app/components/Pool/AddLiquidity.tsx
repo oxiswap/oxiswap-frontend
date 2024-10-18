@@ -10,15 +10,7 @@ import AddLiquidityAssetInput from "./AddLiquidityAssetInput";
 
 
 const MultiAssetInputDiv: React.FC<Pick<PoolInfoProps, 'assets'> & { onAmountsChange: (amounts: string[]) => void }> = observer(({ assets, onAmountsChange }) => {
-  const [amounts, setAmounts] = useState<string[]>(new Array(assets.length).fill(""));
-
-  // const handleAmountChange = (index: number) => (amount: string) => {
-  //   const newAmounts = [...amounts];
-  //   newAmounts[index] = amount;
-  //   setAmounts(newAmounts);
-  //   onAmountsChange(newAmounts);
-  // };
-
+  
   return (
     <div className="w-full flex flex-col items-center">
       {assets.map((asset, index) => (
@@ -27,6 +19,7 @@ const MultiAssetInputDiv: React.FC<Pick<PoolInfoProps, 'assets'> & { onAmountsCh
             icon={asset.icon} 
             symbol={asset.symbol} 
             assetId={asset.assetId}
+            decimals={asset.decimals}
             assetIndex={index} 
             // onAmountChange={handleAmountChange(index)}
           />

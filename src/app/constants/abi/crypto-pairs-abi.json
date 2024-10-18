@@ -52,6 +52,10 @@
       ]
     },
     {
+      "type": "str",
+      "concreteTypeId": "8c25cb3686462e9a86d2883c5688a22fe738b0bbc85f458d2d2b5f3f667c6d5a"
+    },
+    {
       "type": "str[10]",
       "concreteTypeId": "338a25cb65b9251663dcce6362b744fe10aa849758299590f4efed5dd299bf50"
     },
@@ -543,6 +547,33 @@
         {
           "name": "pool",
           "concreteTypeId": "c0710b6731b1dd59799cf6bef33eee3b3b04a2e40e80a0724090215bbf2ca974"
+        },
+        {
+          "name": "to",
+          "concreteTypeId": "ab7cd04e05be58e3fc15d424c2c4a57f824a2a2d97d67252440a3925ebdc1335"
+        },
+        {
+          "name": "amount",
+          "concreteTypeId": "1506e6f44c1d6291cdf46395a8e573276a4fa79e8ace3fc891e092ef32d1b0a0"
+        }
+      ],
+      "name": "emergency_stop",
+      "output": "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d",
+      "attributes": [
+        {
+          "name": "storage",
+          "arguments": [
+            "read",
+            "write"
+          ]
+        }
+      ]
+    },
+    {
+      "inputs": [
+        {
+          "name": "pool",
+          "concreteTypeId": "c0710b6731b1dd59799cf6bef33eee3b3b04a2e40e80a0724090215bbf2ca974"
         }
       ],
       "name": "get_k",
@@ -717,6 +748,10 @@
       "concreteTypeId": "af82480fdd08f1950b75df893648ba1dbee413c616d09755dd8497b582debf45"
     },
     {
+      "logId": "10098701174489624218",
+      "concreteTypeId": "8c25cb3686462e9a86d2883c5688a22fe738b0bbc85f458d2d2b5f3f667c6d5a"
+    },
+    {
       "logId": "10159620282815190840",
       "concreteTypeId": "8cfe38d1ba0d97380df81da6075bed5def90f5bde5e54647772963da050fde12"
     },
@@ -730,22 +765,22 @@
     {
       "name": "MINIMUM_LIQUIDITY",
       "concreteTypeId": "1506e6f44c1d6291cdf46395a8e573276a4fa79e8ace3fc891e092ef32d1b0a0",
-      "offset": 72224
+      "offset": 74768
     },
     {
       "name": "NAME",
       "concreteTypeId": "338a25cb65b9251663dcce6362b744fe10aa849758299590f4efed5dd299bf50",
-      "offset": 72232
+      "offset": 74776
     },
     {
       "name": "SYMBOL",
       "concreteTypeId": "ed705f920eb2c423c81df912430030def10f03218f0a064bfab81b68de71ae21",
-      "offset": 72248
+      "offset": 74792
     },
     {
       "name": "DECIMALS",
       "concreteTypeId": "c89951a24c6ca28c13fd1cfdc646b2b656d69e61a92b91023be7eb58eb914b6b",
-      "offset": 72216
+      "offset": 74760
     }
   ]
 }

@@ -6,7 +6,7 @@ import { Account, createAssetId, isB256 } from 'fuels';
 
 export function useCheckAsset(contractId: string | null) {
   const [asset, setAsset] = useState<Asset | null>(null);
-  const { accountStore, balanceStore } = useStores();
+  const { accountStore } = useStores();
 
   useEffect(() => {
     async function checkAsset() {
@@ -25,9 +25,9 @@ export function useCheckAsset(contractId: string | null) {
         const src20 = new Src20Standard(wallet as Account);
         const name = await src20.getName(contractId);
         const symbol = await src20.getSymbol(contractId);
+        const decimals = await src20.getDecimals(contractId);
         const assetId = createAssetId(contractId, ZERO_ADDRESS);
-        const balance = balanceStore.getBalance(assetId.toString());
-        const newAsset = IAsset.new(name.value, "", symbol.value, assetId.toString(), balance, "0", "0");
+        const newAsset = IAsset.new(name.value, "/stable.svg", symbol.value, assetId.bits, decimals.value, contractId, "", "");
         setAsset(newAsset);
       } catch (error) {
         console.error('Error checking asset: ', error);

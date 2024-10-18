@@ -1,6 +1,6 @@
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
 export const ETH_ASSET_ID = '0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07';
-export const FUEL_PROVIDER_URL = 'https://testnet.fuel.network/v1/graphql';
+export const FUEL_PROVIDER_URL = 'https://mainnet.fuel.network/v1/graphql';
 
 export const defaultETH: Asset = {
   name: 'Ether',
@@ -33,11 +33,13 @@ export interface Asset {
   icon: string;
   symbol: string;
   assetId: string;
-  balance: string;
-  value: string;
-  amount: string;
+  balance?: string;
+  value?: string;
+  amount?: string;
+  decimals?: number;
   popular?: string;
   contractId?: string;
+  subId?: string;
 }
 
 export interface ButtonProps {
@@ -239,11 +241,12 @@ export const IAsset = {
     icon: string,
     symbol: string,
     assetId: string,
-    balance: string,
-    value: string,
-    amount: string
+    decimals: number,
+    contractId: string,
+    subId: string,
+    popular: string
   ): Asset {
-    return { name, icon, symbol, assetId, balance, value, amount };
+    return { name, icon, symbol, assetId, decimals, contractId, subId, popular };
   },
 }
 

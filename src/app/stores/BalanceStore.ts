@@ -67,29 +67,29 @@ class BalanceStore {
   getNativeBalance = () => {
     const b = this.balances.get(ETH_ASSET_ID);
     if (b) {
-      return this.formatBalance(Number(b));
+      return this.formatBalance(Number(b), 9);
     }
     return '0';
   };
 
-  getBalance = (assetId: string) => {
+  getBalance = (assetId: string, decimals: number | undefined) => {
     const b = this.balances.get(assetId);
     if (b) {
-      return this.formatBalance(Number(b));
+      return this.formatBalance(Number(b), decimals);
     }
     return '0';
   };
 
-  getExactBalance = (assetId: string) => {
+  getExactBalance = (assetId: string, decimals: number | undefined) => {
     const amount = this.balances.get(assetId);
     if (amount) {
-      return (Number(amount) / 10 ** 9).toString();
+      return (Number(amount) / 10 ** (decimals || 9)).toString();
     }
     return '0';
   };
 
-  private formatBalance = (amount: number | string): string => {
-    return (Number(amount) / 10 ** 9).toFixed(4);
+  private formatBalance = (amount: number | string, decimals: number | undefined): string => {
+    return (Number(amount) / 10 ** (decimals || 9)).toFixed(6);
   };
 }
 

@@ -112,7 +112,7 @@ const SwapConfirm: React.FC<Pick<SwapConfirmProps, 'onAction' | 'onSwap'>> = obs
               name: `${swapStore.fromAsset.name}`,
               symbol: `${swapStore.fromAsset.symbol}`,
               icon: `${swapStore.fromAsset.icon}`,
-              balance: `${balanceStore.getBalance(swapStore.fromAsset.assetId)}`,
+              balance: `${balanceStore.getBalance(swapStore.fromAsset.assetId, swapStore.fromAsset.decimals)}`,
               amount: `${swapStore.fromAmount}`,
               value: `\$${swapStore.fromAssetPrice}`,
             }}
@@ -130,7 +130,7 @@ const SwapConfirm: React.FC<Pick<SwapConfirmProps, 'onAction' | 'onSwap'>> = obs
               name: `${swapStore.toAsset.name}`,
               symbol: `${swapStore.toAsset.symbol}`,
               icon: `${swapStore.toAsset.icon}`,
-              balance: `${balanceStore.getBalance(swapStore.toAsset.assetId)}`,
+              balance: `${balanceStore.getBalance(swapStore.toAsset.assetId, swapStore.toAsset.decimals)}`,
               amount: `${swapStore.toAmount}`,
               value: `\$${swapStore.toAssetPrice}`,
             }}

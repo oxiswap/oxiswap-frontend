@@ -13,6 +13,7 @@ import SwapNotification from '@components/Swap/SwapNotification';
 import { useWallet } from '@hooks/useWallet';
 import PopupModal from '@components/PopupModal';
 import { AssetConfig } from "@utils/interface";
+import { fetchServerAssetConfig } from "@utils/api";
 
 interface SwapPageContentProps {
   initialAssetConfig: AssetConfig;
@@ -26,6 +27,15 @@ export const SwapPageContent = observer(({ initialAssetConfig }: SwapPageContent
   const { swapStore, buttonStore } = useStores();
 
   const { connect } = useWallet();
+
+  useEffect(() => {
+    async function fetchAssetConfig() {
+      const assetConfig = await fetchServerAssetConfig();
+      swapStore.setAsset(assetConfig.assets);
+      swapStore.setPopularAssets(assetConfig.popularAssets);
+    }
+    fetchAssetConfig();
+  },[])
 
   const handleAssetCardOpen = (isFrom: boolean) => {
     setIsAssetCardOpen(true);
@@ -81,8 +91,8 @@ export const SwapPageContent = observer(({ initialAssetConfig }: SwapPageContent
       <PopupModal isOpen={isAssetCardOpen} onClose={handleAssetCardClose}>
         <SelectAsset
           onAction={handleAssetCardClose}
-          assets={initialAssetConfig.assets as unknown as Asset[]}
-          popularAssets={initialAssetConfig.popularAssets}
+          assets={swapStore.assets as unknown as Asset[]}
+          popularAssets={swapStore.popularAssets}
           isFromAsset={isFromAsset}
           isSwapAction={true}
         />

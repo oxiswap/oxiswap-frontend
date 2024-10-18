@@ -1,9 +1,9 @@
 import { autorun, makeObservable, observable, action } from 'mobx';
 import RootStore from '@stores/RootStore';
-import { Asset, defaultETH, nullAsset } from '@utils/interface';
+import { Asset, defaultETH, nullAsset, AssetConfig } from '@utils/interface';
 
 class SwapStore {
-  @observable Assets: Asset[] = [];
+  @observable assets: Asset[] = [];
   @observable fromAsset: Asset = defaultETH;
   @observable toAsset: Asset = nullAsset;
   @observable fromAmount: string = '';
@@ -20,6 +20,7 @@ class SwapStore {
   @observable fromLoading: boolean = true;
   @observable toLoading: boolean = true;
   @observable isPendingOpen: boolean = false;
+  @observable popularAssets: string[] = [];
 
   constructor(private rootStore: RootStore) {
     makeObservable(this);
@@ -51,13 +52,13 @@ class SwapStore {
   @action
   setFromAsset(Asset: Asset) {
     this.fromAsset = Asset;
-    this.fromAssetPrice = Asset.value;
+    this.fromAssetPrice = Asset.value as string;
   }
 
   @action
   setToAsset(Asset: Asset) {
     this.toAsset = Asset;
-    this.toAssetPrice = Asset.value;
+    this.toAssetPrice = Asset.value as string;
   }
 
   @action
@@ -128,6 +129,15 @@ class SwapStore {
   @action
   setIsPendingOpen(open: boolean) {
     this.isPendingOpen = open;
+  }
+
+  @action
+  setAsset(assets: Asset[]) {
+    this.assets = assets;
+  }
+  @action
+  setPopularAssets(popularAssets: string[]) {
+    this.popularAssets = popularAssets;
   }
 
 }

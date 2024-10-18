@@ -55,7 +55,7 @@ class BN extends BigNumber implements IBN {
     return p.then((v) => new BN(v));
   }
 
-  static parseUnits(value: TValue, decimals = 9): BN {
+  static parseUnits(value: TValue, decimals: number): BN {
     return new BN(new BN(10).pow(decimals).times(bigNumberify(value)));
   }
 

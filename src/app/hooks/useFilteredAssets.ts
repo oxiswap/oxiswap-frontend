@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useCheckAsset } from '@hooks/useCheckAsset';
 import { Asset } from '@utils/interface';
+import { addAsset } from '@utils/api';
 
 export function useFilteredAssets(sortedAssets: Asset[], searchTerm: string) {
   const formattedSearchTerm = useMemo(() => {
@@ -9,11 +10,12 @@ export function useFilteredAssets(sortedAssets: Asset[], searchTerm: string) {
     }
     return searchTerm;
   }, [searchTerm]);
-
   const assetFromId = useCheckAsset(formattedSearchTerm.length === 66 ? formattedSearchTerm : null);
-
   const filteredAssets = useMemo(() => {
     if (formattedSearchTerm.length === 66) {
+      if (assetFromId) {
+        addAsset(assetFromId);
+      }
       return assetFromId ? [assetFromId] : [];
     } else if (searchTerm.length === 0) {
       return sortedAssets;

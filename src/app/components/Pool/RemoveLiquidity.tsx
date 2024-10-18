@@ -23,7 +23,7 @@ const RemoveLiquidityDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observ
   const [isLoading, setIsLoading] = useState(true);
   const { poolStore, balanceStore, accountStore, buttonStore, positionStore, notificationStore} = useStores();
 
-  const exactBalance = balanceStore.getExactBalance(pool.poolAssetId);
+  const exactBalance = balanceStore.getExactBalance(pool.poolAssetId, 9);
   const factory = new CryptoFactory(accountStore.getWallet as Account);
   const routerContract = new CryptoRouter(accountStore.getWallet as Account);
 

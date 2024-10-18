@@ -4,6 +4,7 @@ import ROUTER_ABI from '@constants/abi/crypto-router-abi.json';
 import { CryptoPair } from './CryptoPair';
 import { CryptoFactory } from './CryptoFactory';
 import { Asset } from '@utils/interface';
+import CBN from '@utils/BN';
 
 export class CryptoRouter {
   private contract: Contract;
@@ -14,25 +15,25 @@ export class CryptoRouter {
     this.wallet = walletOrProvider as Account;
   }
 
-  async getAmountsOut(amountIn: string, fromAsset: string, toAsset: string) {
+  async getAmountsOut(amountIn: string, fromAsset: string, toAsset: string, fromDecimals: number | undefined, toDecimals: number | undefined) {
     const asset0 = { bits: fromAsset };
     const asset1 = { bits: toAsset };
-    const formatedAmountIn = bn.parseUnits(amountIn);
+    const formatedAmountIn = bn.parseUnits(amountIn, fromDecimals || 9);
     const { value } = await this.contract.functions
       .get_amounts_out(formatedAmountIn, [asset0, asset1])
       .get();
-    const amountOut = new BN(value[1].toString()).format();
+    const amountOut = new BN(value[1].toString()).formatUnits(toDecimals || 9);
     return amountOut;
   }
 
-  async getAmountsIn(amountOut: string, fromAsset: string, toAsset: string) {
+  async getAmountsIn(amountOut: string, fromAsset: string, toAsset: string, fromDecimals: number | undefined, toDecimals: number | undefined) {
     const asset0 = { bits: fromAsset };
     const asset1 = { bits: toAsset };
-    const formatedAmountOut = bn.parseUnits(amountOut);
+    const formatedAmountOut = bn.parseUnits(amountOut, toDecimals || 9);
     const { value } = await this.contract.functions
       .get_amounts_in(formatedAmountOut, [asset0, asset1])
       .get();
-    const amountIn = new BN(value[0].toString()).format();
+    const amountIn = new BN(value[0].toString()).formatUnits(fromDecimals || 9);
     return amountIn;
   }
 
@@ -41,7 +42,9 @@ export class CryptoRouter {
     toAsset: string,
     slippage: number,
     fromAmount: string,
+    fromDecimals: number | undefined,
     toAmount: string,
+    toDecimals: number | undefined,
     onSubmitted?: () => void
   ) {
     if (!fromAsset || !toAsset || fromAmount === '0' || fromAmount === '0.00') {
@@ -52,10 +55,8 @@ export class CryptoRouter {
     const asset1 = { bits: toAsset };
     const path = [asset0, asset1];
 
-    const formatedAmountIn = bn.parseUnits(fromAmount);
-    const amountOutMin = bn.parseUnits(toAmount).toNumber() * (1 - slippage);
-    const formatedAmountOutMin = bn(amountOutMin);
-    
+    const formatedAmountIn = bn.parseUnits(fromAmount, (fromDecimals || 9));
+    const amountOutMin  = CBN.parseUnits(toAmount, toDecimals || 9).mul(new CBN(1).sub(new CBN(slippage)));
     const now = new BN(Math.round(new Date().getTime() / 1000));
     const time = now.add(new BN(2).pow(new BN(62))).add(new BN(15 * 60));
 
@@ -65,7 +66,7 @@ export class CryptoRouter {
 
     try {
       const { transactionId, waitForResult } = await this.contract.functions
-        .swap_exact_input(formatedAmountIn, formatedAmountOutMin, path, to, time)
+        .swap_exact_input(formatedAmountIn, bn(amountOutMin.toFixed(0)), path, to, time)
         .addContracts([pair.instance])
         .callParams({
           forward: [formatedAmountIn, fromAsset],
@@ -101,7 +102,9 @@ export class CryptoRouter {
     toAsset: string,
     slippage: number,
     fromAmount: string,
+    fromDecimals: number | undefined,
     toAmount: string,
+    toDecimals: number | undefined,
     onSubmitted?: () => void
   ) {
     if (!fromAsset || !toAsset || fromAmount === '0' || fromAmount === '0.00') {
@@ -112,10 +115,11 @@ export class CryptoRouter {
     const asset1 = { bits: toAsset };
     const path = [asset0, asset1];
 
-    const amountOut = bn.parseUnits(toAmount);
-    const amountInMax = bn.parseUnits(fromAmount).toNumber() * (1 + slippage);
-    const formatedAmountInMax = bn(amountInMax);
-    const formatedAmountOut = bn(amountOut);
+    console.log('swapExactOutput', fromAsset, toAsset, slippage, fromAmount, fromDecimals, toAmount, toDecimals);
+    const formatedAmountOut = bn.parseUnits(toAmount, toDecimals || 9);
+    const amountInMax = CBN.parseUnits(fromAmount, fromDecimals || 9).mul(new CBN(1).add(new CBN(slippage)));
+    const formatedAmountInMax = bn(amountInMax.toFixed(0));
+    // const formatedAmountOut = bn(amountOut);
 
     const now = new BN(Math.round(new Date().getTime() / 1000));
     const time = now.add(new BN(2).pow(new BN(62))).add(new BN(15 * 60));
@@ -123,7 +127,7 @@ export class CryptoRouter {
     const account = { bits: this.wallet.address.toB256() };
     const to = { Address: account };
     const pair = new CryptoPair(this.wallet);
-
+    console.log('swapExactOutput', formatedAmountOut.toString(), formatedAmountInMax.toString(), path, to, time);
     try {
       const { transactionId, waitForResult } = await this.contract.functions
         .swap_exact_output(formatedAmountOut, formatedAmountInMax, path, to, time)
@@ -260,9 +264,8 @@ export class CryptoRouter {
     const factory = new CryptoFactory(this.wallet);
     const account = { bits: this.wallet.address.toB256() };
     const to = { Address: account }; 
-    const formatedDepositAmount0 = bn.parseUnits(amounts[0]);
-    const formatedDepositAmount1 = bn.parseUnits(amounts[1]);
-    console.log(formatedDepositAmount0.toString(), formatedDepositAmount1.toString());
+    const formatedDepositAmount0 = bn.parseUnits(amounts[0], assets[0].decimals);
+    const formatedDepositAmount1 = bn.parseUnits(amounts[1], assets[1].decimals);
     const asset0 = { bits: assets[0].assetId };
     const asset1 = { bits: assets[1].assetId };
     // const amount0Min = formatedDepositAmount0.toNumber() * 0.5;
@@ -272,7 +275,6 @@ export class CryptoRouter {
     // const formattedAmount1Min = bn(amount1Min);
     const formattedAmount0Min = formatedDepositAmount0.mul(5).div(10);
     const formattedAmount1Min = formatedDepositAmount1.mul(5).div(10);
-    console.log(new BN(formattedAmount0Min).toString(), new BN(formattedAmount1Min).toString());
     const now = new BN(Math.round(new Date().getTime() / 1000));
     const deadline = now.add(new BN(2).pow(new BN(62))).add(new BN(15 * 60));
     
@@ -414,7 +416,6 @@ export class CryptoRouter {
 
       const { transactionResult } = await waitForResult();
 
-      console.log(transactionResult.status);
       return {
         success: transactionResult.status === 'success',
         transactionId, 

@@ -27,8 +27,12 @@ export const useCalculateAssetAmounts = (assets: Asset[], removeLiquidityAmounts
         const [new_asset0, new_asset1] = sortAsset(asset0_bits, asset1_bits);
         const isAsset0First = asset0_bits.bits === new_asset0.bits;
         const totalSupply = await pairContract.getTotalSupply(pair);
-        const amount0 = (new BN(removeLiquidityAmounts).mul(reserves.value[0])).div(totalSupply.value.toNumber()).toFixed(9);
-        const amount1 = (new BN(removeLiquidityAmounts).mul(reserves.value[1])).div(totalSupply.value.toNumber()).toFixed(9);
+        const fromDecimals = assets[0].decimals || 9;
+        const toDecimals = assets[1].decimals || 9;
+        const fromRemoveLiquidity = new BN(removeLiquidityAmounts).mul(new BN(10).pow(new BN(9 - fromDecimals)));
+        const toRemoveLiquidity = new BN(removeLiquidityAmounts).mul(new BN(10).pow(new BN(9 - toDecimals)));
+        const amount0 = (fromRemoveLiquidity.mul(reserves.value[0])).div(totalSupply.value.toNumber()).toFixed(assets[0].decimals || 9);
+        const amount1 = (toRemoveLiquidity.mul(reserves.value[1])).div(totalSupply.value.toNumber()).toFixed(assets[1].decimals || 9);
         const reserveIn = isAsset0First ? amount0 : amount1;
         const reserveOut = isAsset0First ? amount1 : amount0;
         setAmounts([reserveIn, reserveOut]);

@@ -78,7 +78,7 @@ const Header: React.FC<HeaderProps> = observer(({ onDisconnected }) => {
           {!isMobile && (
             <button className='bg-gradient-to-r from-blue-500 to-blue-700 hover:border-white border border-transparent text-xs text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors'>
               <Image src="/fuel-icon.svg" alt='network' width={16} height={16}/>
-              <span>Fuel Testnet</span>
+              <span>Fuel Mainnet</span>
             </button>
           )}
           {isMobile && (
@@ -95,7 +95,7 @@ const Header: React.FC<HeaderProps> = observer(({ onDisconnected }) => {
             accountStore.isConnected ? (
               <div
                 onClick={onDisconnected}
-                className='flex items-center bg-white text-xs rounded-md overflow-hidden'
+                className='flex items-center bg-white text-xs rounded-md overflow-hidden text-black'
               > 
                 <button className='flex items-center space-x-2 px-3 py-2'>
                   <Image src="/fuel-icon.svg" alt='wallet' width={16} height={16}/>

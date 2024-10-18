@@ -7,20 +7,20 @@ import { useStores } from '@stores/useStores';
 import useResponsive from '@hooks/useResponsive';
 import SearchInput from '@components/SearchInput';
 import { useFilteredAssets } from '@hooks/useFilteredAssets';
+import { useEthPrice } from '@hooks/useEthPrice';
 
 const SelectAsset: React.FC<SelectAssetProps> = observer(({ onAction, assets, popularAssets, isFromAsset, isSwapAction }) => {
-
   const [searchTerm, setSearchTerm] = useState('');
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
   const { swapStore, balanceStore, positionStore } = useStores();
   const isMobile = useResponsive();
-
+  useEthPrice();
   const sortedAssets = useMemo(() => {
     return [...assets].sort((a, b) => {
-      const balanceA = Number(balanceStore.getBalance(a.assetId));
-      const balanceB = Number(balanceStore.getBalance(b.assetId));
+      const balanceA = Number(balanceStore.getBalance(a.assetId, a.decimals));
+      const balanceB = Number(balanceStore.getBalance(b.assetId, b.decimals));
       if (balanceA > 0 && balanceB === 0) return -1;
       if (balanceA === 0 && balanceB > 0) return 1;
       return balanceB - balanceA;
@@ -28,7 +28,6 @@ const SelectAsset: React.FC<SelectAssetProps> = observer(({ onAction, assets, po
   }, [assets, balanceStore]);
 
   const filteredAssets = useFilteredAssets(sortedAssets, searchTerm);
-
   useEffect(() => {
     setIsVisible(true);
     setTimeout(() => {
@@ -181,7 +180,7 @@ const SelectAsset: React.FC<SelectAssetProps> = observer(({ onAction, assets, po
                       </div>
                     </div>
                     <div className="text-right">
-                      <div>{balanceStore.getBalance(asset.assetId)}</div>
+                      <div>{balanceStore.getBalance(asset.assetId, asset.decimals)}</div>
                     </div>
                   </div>
                 ))}
