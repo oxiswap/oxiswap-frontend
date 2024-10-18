@@ -9,7 +9,7 @@ import SettingStore from './SettingStore';
 import PoolStore from './PoolStore';
 import OracleStore from './OracleStore';
 import PositionStore from './PositionStore';
-
+import NetworkStore from './NetworkStore';
 
 export {
   StoreContext,
@@ -24,4 +24,5 @@ export {
   PoolStore,
   OracleStore,
   PositionStore,
+  NetworkStore,
 };

@@ -1,6 +1,6 @@
 'use client';
 import React, { useCallback } from 'react';
-import { Account, Address, Provider } from 'fuels';
+import { Account, Address, Provider, returnZeroScript } from 'fuels';
 import { CryptoPair } from '@blockchain/CryptoPair';
 import { useStores } from '@stores/useStores';
 import { ETH_ASSET_ID } from '@utils/interface';
@@ -16,8 +16,8 @@ function sortAssets(asset1: string, asset2: string) {
 }
 
 
-function getPriceImpact(fromAssetIsAsset0: boolean, fromAmount: string, reserve0: string, reserve1: string) { 
-  const fromAmountFormated = BN.parseUnits(fromAmount.toString());
+function getPriceImpact(fromAssetIsAsset0: boolean, fromAmount: string, reserve0: string, reserve1: string, fromDecimals: number | undefined, toDecimals: number | undefined) { 
+  const fromAmountFormated = BN.parseUnits(fromAmount.toString(), fromDecimals|| 9);
   const fee = new BN(3).div(new BN(1000));
 
   const amountInWithFee = new BN(fromAmountFormated).mul(new BN(1).sub(fee));
@@ -53,8 +53,8 @@ function getPriceImpact(fromAssetIsAsset0: boolean, fromAmount: string, reserve0
 }
 
 
-export const useOracle = (account: Account | Provider, pair: string, asset1: string, asset2: string) => {
-  const { oracleStore, swapStore, settingStore, buttonStore } = useStores();
+export const useOracle = (account: Account | Provider, pair: string, asset1: string, asset2: string, fromDecimals: number | undefined, toDecimals: number | undefined) => {
+  const { oracleStore, swapStore, settingStore, buttonStore, positionStore } = useStores();
   const pairContract = new CryptoPair(account);
   const [new_asset1, new_asset2] = sortAssets(asset1, asset2);
   
@@ -62,9 +62,10 @@ export const useOracle = (account: Account | Provider, pair: string, asset1: str
     const reserves = await pairContract.getReserves(pair);
 
     const isFromAssetFirst = new_asset1 === swapStore.fromAsset.assetId;
+
     const swapRate = isFromAssetFirst ? reserves.value[1] / reserves.value[0] : reserves.value[0] / reserves.value[1];
 
-    const { priceImpact } = getPriceImpact(isFromAssetFirst, swapStore.fromAmount, reserves.value[0], reserves.value[1]);
+    const { priceImpact } = getPriceImpact(isFromAssetFirst, swapStore.fromAmount, reserves.value[0], reserves.value[1], fromDecimals, toDecimals);
 
     const formattedPriceImpactPercentage = Number(priceImpact) > 0.01 ? Number(priceImpact).toFixed(2) : '<0.01';
     swapStore.setPriceImpact(`${formattedPriceImpactPercentage}`);
@@ -78,17 +79,27 @@ export const useOracle = (account: Account | Provider, pair: string, asset1: str
     if (isETHInvolved) {
       const isFromAssetETH = swapStore.fromAsset.assetId === ETH_ASSET_ID;
       const isToAssetETH = swapStore.toAsset.assetId === ETH_ASSET_ID;
-      
-      if (isFromAssetETH || isToAssetETH) {
-        if (isFromAssetETH) {
+      const isAddFromAssetETH = positionStore.addLiquidityAssets[0]?.assetId === ETH_ASSET_ID;
+      const isAddToAssetETH = positionStore.addLiquidityAssets[1]?.assetId === ETH_ASSET_ID;
+      if (isFromAssetETH || isToAssetETH || isAddFromAssetETH || isAddToAssetETH) {
+        if (isFromAssetETH ) {
           swapRateValue = oracleStore.ethPrice;
-          swapStore.setFromAssetPrice((Number(swapStore.fromAmount) * Number(swapRateValue)).toFixed(4).toString());
-          swapStore.setToAssetPrice((Number(swapStore.toAmount) * 1 / Number(swapRate) * Number(swapRateValue)).toFixed(4).toString());
-
-        } else {
-          swapRateValue = (Number(swapRate) * Number(oracleStore.ethPrice)).toFixed(2);
-          swapStore.setFromAssetPrice((Number(swapStore.fromAmount) * Number(swapRateValue)).toFixed(4).toString());
-          swapStore.setToAssetPrice((Number(swapStore.toAmount) * Number(oracleStore.ethPrice)).toFixed(4).toString());
+          swapStore.setFromAssetPrice((Number(swapStore.fromAmount) * Number(swapRateValue)).toFixed(4));
+          swapStore.setToAssetPrice((Number(swapStore.toAmount) * (10 ** (toDecimals || 9)) / (10 ** (fromDecimals || 9)) / Number(swapRate) * Number(swapRateValue)).toFixed(4));
+        } else if (isToAssetETH) {
+          swapRateValue = (Number(swapRate) * Number(oracleStore.ethPrice)).toFixed(9);
+          swapStore.setFromAssetPrice((Number(swapStore.fromAmount) * (10 ** (fromDecimals || 9)) / (10 ** (toDecimals || 9)) * Number(swapRateValue)).toFixed(4));
+          swapStore.setToAssetPrice((Number(swapStore.toAmount) * Number(oracleStore.ethPrice)).toFixed(4));
+        } 
+        if (isAddFromAssetETH) {
+          swapRateValue = oracleStore.ethPrice;
+          oracleStore.setAssetPrices((Number(positionStore.getAmount(0)) * Number(swapRateValue)).toFixed(4), 0);
+          oracleStore.setAssetPrices((Number(positionStore.getAmount(1)) * (10 ** (toDecimals || 9)) / (10 ** (fromDecimals || 9)) / Number(swapRate) * Number(swapRateValue)).toFixed(4), 1)
+        } else if (isAddToAssetETH) {
+          console.log('isAddToAssetETH');
+          swapRateValue = (Number(swapRate) * Number(oracleStore.ethPrice)).toFixed(9);
+          oracleStore.setAssetPrices((Number(positionStore.getAmount(1)) * Number(swapRateValue)).toFixed(4), 1);
+          oracleStore.setAssetPrices((Number(positionStore.getAmount(0)) * (10 ** (fromDecimals || 9)) / (10 ** (toDecimals || 9)) / Number(swapRate) * Number(swapRateValue)).toFixed(4), 0);
         }
       }
     }

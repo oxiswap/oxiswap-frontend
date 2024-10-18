@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { useFuel, useConnectUI } from '@fuels/react';
+import { useFuel, useConnectUI, useDisconnect, useIsConnected, useAccount} from '@fuels/react';
 import { Account } from 'fuels';
 import { useStores } from '@stores/useStores';
 
@@ -7,39 +7,30 @@ import { useStores } from '@stores/useStores';
 export const useWallet = () => {
   const { fuel } = useFuel();
   const { connect, isConnecting } = useConnectUI();
+  const { disconnect, isPending: disconnectLoading } = useDisconnect();
+  const { isConnected } = useIsConnected();
+  const { account } = useAccount();
 
   const { accountStore } = useStores();
   const [ wallet, setWallet ] = useState<Account | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
 
   const handleDisconnect = useCallback(async () => {
-    await fuel.disconnect();
+    disconnect();
     await accountStore.disconnect();
-    
-  }, [fuel, accountStore]);
+  }, [fuel, accountStore, disconnect]);
   
 
   useEffect(() => {
     const checkConnection = async () => {
-      const connected = await fuel.isConnected();
-      setIsConnected(connected);
-      if (connected) {
-        const accounts = await fuel.accounts();
-        const wallet = await fuel.getWallet(accounts[0]);
+      if (isConnected && account) {
+        const wallet = await fuel.getWallet(account as string);
         setWallet(wallet);
+        accountStore.connect(wallet);
       }
     };
     checkConnection();
-  }, [fuel, isConnecting]);
+  }, [fuel, isConnected, accountStore, account]);
 
-
-  useEffect(() => {
-    if (!isConnected || !wallet) return;
-
-    accountStore.connect(wallet);
-  }, [isConnected, wallet, accountStore]);
-
-  
   return {
     isConnected,
     wallet,

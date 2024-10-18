@@ -58,7 +58,9 @@ export const useSwapInput = (isFromInput: boolean) => {
     accountStore.isConnected ? accountStore.getWallet as Account : provider as Provider, 
     pair, 
     swapStore.fromAsset.assetId, 
-    swapStore.toAsset.assetId
+    swapStore.toAsset.assetId,
+    swapStore.fromAsset.decimals,
+    swapStore.toAsset.decimals,
   );
 
   const updateData = useCallback(async (amount?: string) => {
@@ -69,8 +71,8 @@ export const useSwapInput = (isFromInput: boolean) => {
       if (new BN(currentAmount).gt(BN.ZERO)) {
         try {
           const amounts = isFromInput 
-            ? await router.getAmountsOut(currentAmount, swapStore.fromAsset.assetId, swapStore.toAsset.assetId)
-            : await router.getAmountsIn(currentAmount, swapStore.fromAsset.assetId, swapStore.toAsset.assetId);
+            ? await router.getAmountsOut(currentAmount, swapStore.fromAsset.assetId, swapStore.toAsset.assetId, swapStore.fromAsset.decimals, swapStore.toAsset.decimals)
+            : await router.getAmountsIn(currentAmount, swapStore.fromAsset.assetId, swapStore.toAsset.assetId, swapStore.fromAsset.decimals, swapStore.toAsset.decimals);
           const newAmount = amounts.replace(/,/g, '');
 
           if (isFromInput) {
@@ -189,9 +191,9 @@ export const useSwapInput = (isFromInput: boolean) => {
         return;
       }
 
-      const currentBalance = BN.parseUnits(balanceStore.getBalance(swapStore.fromAsset.assetId, swapStore.fromAsset.decimals));
-      const formatFromAmount = BN.parseUnits(fromAmount);
-      const formatToAmount = BN.parseUnits(toAmount);
+      const currentBalance = BN.parseUnits(balanceStore.getBalance(swapStore.fromAsset.assetId, swapStore.fromAsset.decimals), swapStore.fromAsset.decimals || 9);
+      const formatFromAmount = BN.parseUnits(fromAmount, swapStore.fromAsset.decimals || 9);
+      const formatToAmount = BN.parseUnits(toAmount, swapStore.toAsset.decimals || 9);
     
       if (formatFromAmount.eq(0) || formatToAmount.eq(0)) {
         setButtonState('Swap', true, 'bg-oxi-bg-03 text-oxi-text-01');

@@ -12,8 +12,9 @@
     "pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static"
   },
   "dependencies": {
-    "@fuels/connectors": "^0.31.3",
-    "@fuels/react": "^0.31.3",
+    "@cloudflare/wrangler": "^1.21.0",
+    "@fuels/connectors": "0.36.0",
+    "@fuels/react": "0.36.0",
     "@heroicons/react": "^2.1.5",
     "@nextui-org/slider": "^2.2.15",
     "@nextui-org/system": "^2.2.5",
@@ -22,10 +23,9 @@
     "@tanstack/react-query": "^5.53.3",
     "@tanstack/react-query-devtools": "^5.54.0",
     "@types/antd": "^1.0.0",
-    "@wagmi/connectors": "^5.1.14",
     "axios": "^1.7.7",
     "framer-motion": "^11.3.29",
-    "fuels": "^0.94.9",
+    "fuels": "0.96.1",
     "js-sha256": "^0.11.0",
     "mobx": "^6.13.1",
     "mobx-react": "^9.1.1",
@@ -34,6 +34,7 @@
     "pino-pretty": "^11.2.2",
     "react": "^18",
     "react-debounce-input": "^3.3.0",
+    "react-device-detect": "^2.2.3",
     "react-dom": "^18",
     "react-icons": "^5.3.0"
   },

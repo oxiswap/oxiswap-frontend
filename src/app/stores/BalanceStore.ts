@@ -89,7 +89,7 @@ class BalanceStore {
   };
 
   private formatBalance = (amount: number | string, decimals: number | undefined): string => {
-    return (Number(amount) / 10 ** (decimals || 9)).toFixed(4);
+    return (Number(amount) / 10 ** (decimals || 9)).toFixed(6);
   };
 }
 

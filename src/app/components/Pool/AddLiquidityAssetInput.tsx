@@ -36,7 +36,7 @@ const AddLiquidityAssetInput: React.FC<Pick<Asset, 'icon' | 'symbol' | 'assetId'
         </div>
       </div>
       <div className="flex justify-between mt-2">
-        <span className="text-xs text-text-500">~${accountStore.isConnected ? oracleStore.getAssetPrice(assetId) : "0.00"}</span>
+        <span className="text-xs text-text-500">~${accountStore.isConnected ? oracleStore.getAssetPrices(assetIndex) : "0.00"}</span>
         <div className="flex items-center">
           <span className="text-xs text-text-500 mr-2">{accountStore.isConnected ? currentBalance : "0"}</span>
           <Image src="/wallet.svg" alt="wallet" width={16} height={16} />

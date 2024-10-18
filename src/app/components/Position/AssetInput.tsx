@@ -27,7 +27,7 @@ const AssetInput: React.FC<Pick<Asset, 'symbol' | 'icon' | 'assetId' | 'decimals
   return (
     <div className="bg-white p-4 mt-1 mb-2 rounded-lg w-full">
       <div className="flex justify-between items-center">
-      {isLoading ? (
+      {isLoading || positionStore.loadingStates[assetIndex] ? (
           <Skeleton.Input style={{ width: '66%%', height: '16px' }} active />
         ) : (<input
           type="text"
@@ -57,7 +57,7 @@ const AssetInput: React.FC<Pick<Asset, 'symbol' | 'icon' | 'assetId' | 'decimals
         {isLoading ? (
           <Skeleton.Input style={{ width: '66%%', height: '16px' }} active />
         ) : (
-          <span className="text-sm text-[#8f9ba7]">~${oracleStore.getAssetPrice(assetId)}</span>
+          <span className="text-sm text-[#8f9ba7]">~${oracleStore.getAssetPrices(assetIndex)}</span>
         )}
         <div className="flex items-center">
           <span className="text-sm text-[#8f9ba7] mr-2">

@@ -15,6 +15,7 @@ import SwapButton from "./SwapButton";
 import StatsDiv from "./StatsDiv";
 import AssetDiv from "./AssetDiv";
 import RightIcon from '@assets/icons/rightIcon';
+import { useEthPrice } from '@hooks/useEthPrice';
 
 const AddLiquidityInputDiv = lazy(() => import("@components/Pool/AddLiquidity"));
 const RemoveLiquidityDiv = lazy(() => import("@components/Pool/RemoveLiquidity"));
@@ -28,6 +29,7 @@ const PoolDetail = observer(() => {
   const [liquidityCardOpen, setLiquidityCardOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { poolStore, positionStore, notificationStore } = useStores();
+  useEthPrice();
 
   useEffect(() => {
     setTimeout(() => {

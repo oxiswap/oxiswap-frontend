@@ -30,7 +30,9 @@ const SwapPending: React.FC<Pick<ButtonProps, 'onAction'>> = ({ onAction }) => {
             swapStore.toAsset.assetId,
             Number(settingStore.slippage) / 100,
             swapStore.fromAmount,
+            swapStore.fromAsset.decimals,
             swapStore.toAmount,
+            swapStore.toAsset.decimals,
             handleSwap
           );
         } else {
@@ -39,7 +41,9 @@ const SwapPending: React.FC<Pick<ButtonProps, 'onAction'>> = ({ onAction }) => {
             swapStore.toAsset.assetId,
             Number(settingStore.slippage) / 100,
             swapStore.fromAmount,
+            swapStore.fromAsset.decimals,
             swapStore.toAmount,
+            swapStore.toAsset.decimals,
             handleSwap
           );
         }
