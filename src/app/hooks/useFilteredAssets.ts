@@ -94,9 +94,13 @@ export function useFilteredAssets(sortedAssets: Asset[], searchTerm: string) {
     }
   }, [shouldFetchBalances, formattedSearchTerm, balances]);
 
+  const filteredSortedAssets = useMemo(() => {
+    return sortedAssets.filter(asset => asset.name.toString() !== "unknown");
+  }, [sortedAssets]);
+
   const filteredAssets = useMemo(() => {
     if (searchTerm.length === 0) {
-      return sortedAssets;
+      return filteredSortedAssets;
     }
     
     if (shouldFetchBalances) {
@@ -104,10 +108,10 @@ export function useFilteredAssets(sortedAssets: Asset[], searchTerm: string) {
     }
     
     const searchTermLower = searchTerm.toLowerCase();
-    return sortedAssets.filter(asset => 
+    return filteredSortedAssets.filter(asset => 
       asset.symbol.toLowerCase().startsWith(searchTermLower)
     );
-  }, [sortedAssets, searchTerm, shouldFetchBalances, contractAssets]);
+  }, [filteredSortedAssets, searchTerm, shouldFetchBalances, contractAssets]);
 
   return { 
     filteredAssets, 
