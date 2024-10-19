@@ -8,7 +8,6 @@ import SettingStore from '@stores/SettingStore';
 import PoolStore from '@stores/PoolStore';
 import OracleStore from '@stores/OracleStore';
 import PositionStore from '@stores/PositionStore';
-import NetworkStore from '@stores/NetworkStore';
 
 export interface IRootStore {
   accountStore?: IAccountStore;
@@ -24,7 +23,6 @@ class RootStore {
   poolStore: PoolStore;
   oracleStore: OracleStore;
   positionStore: PositionStore;
-  networkStore: NetworkStore;
 
   constructor(initState?: IRootStore) {
     makeAutoObservable(this);
@@ -37,7 +35,6 @@ class RootStore {
     this.poolStore = new PoolStore(this);
     this.oracleStore = new OracleStore();
     this.positionStore = new PositionStore(this);
-    this.networkStore = new NetworkStore(this);
     autorun(() => {
       this.saveState();
     }, { delay: 1000 });

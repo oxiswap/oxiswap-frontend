@@ -36,6 +36,8 @@ export const useSwapInput = (isFromInput: boolean) => {
     initProvider();
   }, []);
 
+
+
   const fetchPairInfo = useCallback(async () => {
     if (!factory) return;
     try {

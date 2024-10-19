@@ -192,6 +192,7 @@ export const useAddLiquidityInput = (assetIndex: number) => {
     
     if (newAmount.length === 0) {
       positionStore.setAddLiquidityAmounts([]);
+      assets.forEach((_, index) => positionStore.setLoading(false, index));
     } 
   };
 

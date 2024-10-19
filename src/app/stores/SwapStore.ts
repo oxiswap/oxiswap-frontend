@@ -21,6 +21,7 @@ class SwapStore {
   @observable toLoading: boolean = true;
   @observable isPendingOpen: boolean = false;
   @observable popularAssets: string[] = [];
+  @observable searchLoading: boolean = true;
 
   constructor(private rootStore: RootStore) {
     makeObservable(this);
@@ -140,6 +141,10 @@ class SwapStore {
     this.popularAssets = popularAssets;
   }
 
+  @action
+  setSearchLoading(loading: boolean) {
+    this.searchLoading = loading;
+  }
 }
 
 export default SwapStore;
