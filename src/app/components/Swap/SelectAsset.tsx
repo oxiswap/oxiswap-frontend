@@ -18,16 +18,19 @@ const SelectAsset: React.FC<SelectAssetProps> = observer(({ onAction, assets, po
   const isMobile = useResponsive();
   useEthPrice();
   const observerRef = useRef<HTMLDivElement | null>(null);
+
   const sortedAssets = useMemo(() => {
-    return [...assets].sort((a, b) => {
-      const balanceA = Number(balanceStore.getBalance(a.assetId, a.decimals));
-      const balanceB = Number(balanceStore.getBalance(b.assetId, b.decimals));
-      if (balanceA > 0 && balanceB === 0) return -1;
-      if (balanceA === 0 && balanceB > 0) return 1;
-      return balanceB - balanceA;
-    });
+    return [...assets]
+      .filter(asset => asset.name.toString() !== "unknown")
+      .sort((a, b) => {
+        const balanceA = Number(balanceStore.getBalance(a.assetId, a.decimals));
+        const balanceB = Number(balanceStore.getBalance(b.assetId, b.decimals));
+        if (balanceA > 0 && balanceB === 0) return -1;
+        if (balanceA === 0 && balanceB > 0) return 1;
+        return balanceB - balanceA;
+      });
   }, [assets, balanceStore]);
-  
+
   const { filteredAssets, loadMoreAssets, hasMore, isLoading, isInitialLoad } = useFilteredAssets(sortedAssets, searchTerm);
 
   useEffect(() => {
