@@ -26,14 +26,14 @@ export const usePoolChecker = () => {
          
           const [asset0, asset1] = result.value;
           
-          if (asset0.bits !== '0x0000000000000000000000000000000000000000000000000000000000000000') {
+          // if (asset0.bits !== '0x0000000000000000000000000000000000000000000000000000000000000000') {
             
-            const name0 = (await src20.getName(asset0)).value;
-            const symbol0 = (await src20.getSymbol(asset0)).value;
-            const name1 = (await src20.getName(asset1)).value;
-            const symbol1 = (await src20.getSymbol(asset1)).value;
-            return { id: [asset0, asset1], name: [name0, name1], symbol: [symbol0, symbol1] };
-          }
+          //   const name0 = (await src20.getName(asset0)).value;
+          //   const symbol0 = (await src20.getSymbol(asset0)).value;
+          //   const name1 = (await src20.getName(asset1)).value;
+          //   const symbol1 = (await src20.getSymbol(asset1)).value;
+          //   return { id: [asset0, asset1], name: [name0, name1], symbol: [symbol0, symbol1] };
+          // }
           return null;
         });
         const poolAssetsResults = await Promise.all(poolAssetsPromises);

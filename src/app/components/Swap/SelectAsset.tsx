@@ -1,22 +1,23 @@
 import Image from 'next/image';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Asset, SelectAssetProps } from '@utils/interface';
-import { Skeleton } from 'antd';
+import { Skeleton, Spin } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '@stores/useStores';
 import useResponsive from '@hooks/useResponsive';
 import SearchInput from '@components/SearchInput';
 import { useFilteredAssets } from '@hooks/useFilteredAssets';
 import { useEthPrice } from '@hooks/useEthPrice';
+import styles from '@src/app/SelectAsset.module.css';
 
 const SelectAsset: React.FC<SelectAssetProps> = observer(({ onAction, assets, popularAssets, isFromAsset, isSwapAction }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isVisible, setIsVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSearching, setIsSearching] = useState(false);
-  const { swapStore, balanceStore, positionStore } = useStores();
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const { swapStore, balanceStore } = useStores();
   const isMobile = useResponsive();
   useEthPrice();
+  const observerRef = useRef<HTMLDivElement | null>(null);
   const sortedAssets = useMemo(() => {
     return [...assets].sort((a, b) => {
       const balanceA = Number(balanceStore.getBalance(a.assetId, a.decimals));
@@ -26,24 +27,16 @@ const SelectAsset: React.FC<SelectAssetProps> = observer(({ onAction, assets, po
       return balanceB - balanceA;
     });
   }, [assets, balanceStore]);
+  
+  const { filteredAssets, loadMoreAssets, hasMore, isLoading, isInitialLoad } = useFilteredAssets(sortedAssets, searchTerm);
 
-  const filteredAssets = useFilteredAssets(sortedAssets, searchTerm);
   useEffect(() => {
     setIsVisible(true);
     setTimeout(() => {
-      setIsLoading(false);
+      setIsInitialLoading(false);
     }, 1500);
   }, []);
 
-  useEffect(() => {
-    if (searchTerm) {
-      setIsSearching(true);
-      const timer = setTimeout(() => {
-        setIsSearching(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [searchTerm]);
 
   const handleAssetSelect = (asset: Asset) => {
     if (isSwapAction) {
@@ -99,6 +92,78 @@ const SelectAsset: React.FC<SelectAssetProps> = observer(({ onAction, assets, po
     }
   };
 
+  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
+    const target = entries[0];
+    if (target.isIntersecting && hasMore && !isLoading && loadMoreAssets) {
+      loadMoreAssets();
+    }
+  }, [hasMore, loadMoreAssets, isLoading]);
+
+  useEffect(() => {
+    const option = {
+      root: null,
+      rootMargin: '20px',
+      threshold: 1.0
+    };
+    const observer = new IntersectionObserver(handleObserver, option);
+    if (observerRef.current) observer.observe(observerRef.current);
+    return () => {
+      if (observerRef.current) observer.unobserve(observerRef.current);
+    };
+  }, [handleObserver]);
+
+  const renderAssetList = () => {
+    const assetsToRender = searchTerm ? filteredAssets : sortedAssets;
+
+    if (isInitialLoading) {
+      return (
+        <div className="flex h-full">
+          <Skeleton active avatar paragraph={{ rows: 1 }} />
+        </div>
+      );
+    }
+
+    if (assetsToRender.length === 0 && !isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full pb-36">
+          <Image src="/no-result.svg" alt="No results" width={36} height={36} />
+          <p className="mt-4 text-gray-500">No assets found</p>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div className="space-y-2">
+          {assetsToRender.map((asset) => (
+            <div
+              key={`${asset.symbol}-${asset.assetId}`}
+              className="flex items-center justify-between p-2 hover:bg-oxi-bg-02 rounded cursor-pointer"
+              onClick={() => handleAssetSelect(asset)}>
+              <div className="flex items-center">
+                {renderAssetIcon(asset)}
+                <div>
+                  <div className='text-base'>{asset.name}</div>
+                  <div className="text-xs text-gray-400">
+                    {asset.symbol || asset.assetId.slice(0, 10) + '...'}
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div>{balanceStore.getBalance(asset.assetId, asset.decimals)}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {(hasMore || isLoading) && (
+          <div ref={observerRef} className="py-4">
+            <Skeleton active avatar paragraph={{ rows: 1 }} />
+          </div>
+        )}
+      </>
+    );
+  };
+
   return (
     <div
       className={`
@@ -117,83 +182,33 @@ const SelectAsset: React.FC<SelectAssetProps> = observer(({ onAction, assets, po
       </div>
       <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-      {isLoading ? (
-        <div>
-          <div className="flex flex-wrap gap-2 mb-4 pb-6 border-b-2 border-gray-200">
-            {[...Array(5)].map((_, index) => (
-              <Skeleton.Button
-                key={index}
-                active
-                style={{ width: '80px', height: '32px' }}
-              />
-            ))}
-          </div>
-          <div className={`flex-1 overflow-y-auto custom-scrollbar pr-2 ${isMobile ? 'h-[calc(100vh-250px)]' : 'h-96'}`}>
-            <div className="space-y-2">
-              {[...Array(10)].map((_, index) => (
-                <Skeleton key={index} active avatar paragraph={{ rows: 1 }} />
-              ))}
-            </div>
-          </div>
+      {!isInitialLoading && (
+        <div className="flex flex-wrap gap-2 mb-4 pb-6 border-b-2 border-gray-200">
+          {popularAssets.map((symbol) => {
+            const asset = sortedAssets.find((t) => t.symbol === symbol);
+            return (
+              asset && (
+                <button
+                  key={symbol}
+                  className="bg-white hover:bg-oxi-bg-02 rounded-md py-2 px-3 text-sm flex items-center justify-center border border-gray-300"
+                  onClick={() => handleAssetSelect(asset)}>
+                  <Image
+                    src={asset.icon}
+                    alt={asset.symbol}
+                    width={20}
+                    height={20}
+                    className="mr-2"
+                  />
+                  {asset.symbol}
+                </button>
+              )
+            );
+          })}
         </div>
-      ) : (
-        <>
-          <div className="flex flex-wrap gap-2 mb-4 pb-6 border-b-2 border-gray-200">
-            {popularAssets.map((symbol) => {
-              const asset = sortedAssets.find((t) => t.symbol === symbol);
-              return (
-                asset && (
-                  <button
-                    key={symbol}
-                    className="bg-white hover:bg-oxi-bg-02 rounded-md py-2 px-3 text-sm flex items-center justify-center border border-gray-300"
-                    onClick={() => handleAssetSelect(asset)}>
-                    <Image
-                      src={asset.icon}
-                      alt={asset.symbol}
-                      width={20}
-                      height={20}
-                      className="mr-2"
-                    />
-                    {asset.symbol}
-                  </button>
-                )
-              );
-            })}
-          </div>
-          <div className={`flex-1 overflow-y-auto custom-scrollbar pr-2 ${isMobile ? 'h-[calc(100vh-250px)]' : 'h-96'}`}>
-            {isSearching ? (
-              <Skeleton active avatar paragraph={{ rows: 1 }} />
-            ) : filteredAssets.length > 0 ? (
-              <div className="space-y-2">
-                {filteredAssets.map((asset) => (
-                  <div
-                    key={asset.symbol || asset.assetId}
-                    className="flex items-center justify-between p-2 hover:bg-oxi-bg-02 rounded cursor-pointer"
-                    onClick={() => handleAssetSelect(asset)}>
-                    <div className="flex items-center">
-                      {renderAssetIcon(asset)}
-                      <div>
-                        <div className='text-base'>{asset.name}</div>
-                        <div className="text-xs text-gray-400">
-                          {asset.symbol || asset.assetId.slice(0, 10) + '...'}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div>{balanceStore.getBalance(asset.assetId, asset.decimals)}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full pb-36">
-                <Image src="/no-result.svg" alt="No results" width={36} height={36} />
-                <p className="mt-4 text-gray-500">No assets found</p>
-              </div>
-            )}
-          </div>
-        </>
       )}
+      <div className={`flex-1 overflow-y-auto pr-2 ${isMobile ? 'h-[calc(100vh-250px)]' : 'h-96'} ${styles.customScrollbar}`}>
+        {renderAssetList()}
+      </div>
     </div>
   );
 });

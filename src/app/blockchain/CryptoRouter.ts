@@ -115,7 +115,6 @@ export class CryptoRouter {
     const asset1 = { bits: toAsset };
     const path = [asset0, asset1];
 
-    console.log('swapExactOutput', fromAsset, toAsset, slippage, fromAmount, fromDecimals, toAmount, toDecimals);
     const formatedAmountOut = bn.parseUnits(toAmount, toDecimals || 9);
     const amountInMax = CBN.parseUnits(fromAmount, fromDecimals || 9).mul(new CBN(1).add(new CBN(slippage)));
     const formatedAmountInMax = bn(amountInMax.toFixed(0));
@@ -127,7 +126,6 @@ export class CryptoRouter {
     const account = { bits: this.wallet.address.toB256() };
     const to = { Address: account };
     const pair = new CryptoPair(this.wallet);
-    console.log('swapExactOutput', formatedAmountOut.toString(), formatedAmountInMax.toString(), path, to, time);
     try {
       const { transactionId, waitForResult } = await this.contract.functions
         .swap_exact_output(formatedAmountOut, formatedAmountInMax, path, to, time)
