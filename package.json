@@ -9,7 +9,8 @@
     "lint": "next lint",
     "pages:build": "npx @cloudflare/next-on-pages",
     "pages:preview": "npm run pages:build && wrangler pages dev .vercel/output/static",
-    "pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static"
+    "pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static",
+    "postbuild": "next-sitemap"
   },
   "dependencies": {
     "@cloudflare/wrangler": "^1.21.0",
@@ -31,6 +32,7 @@
     "mobx-react": "^9.1.1",
     "mobx-react-lite": "^4.0.7",
     "next": "14.2.5",
+    "next-sitemap": "^4.2.3",
     "pino-pretty": "^11.2.2",
     "react": "^18",
     "react-debounce-input": "^3.3.0",

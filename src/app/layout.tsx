@@ -2,7 +2,7 @@ import "./globals.css";
 import ClientWrapper from '@components/ClientWrapper';
 import { Providers } from '@components/Provider';
 import { fonts } from "../../utils/fonts";
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import Footer from "@components/Footer/Footer";
 
 
