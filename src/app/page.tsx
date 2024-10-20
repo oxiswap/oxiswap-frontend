@@ -1,20 +1,16 @@
-'use client'
-
-import React from 'react';
-// import SwapPage from './swap/page';
+import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
-import { observer } from 'mobx-react';
 
-const SwapPage = dynamic(() => import('./swap/page'), { ssr: false });
+const ClientSwapPage = dynamic(() => import('./ClientSwapPage'), { ssr: false });
+
 export const runtime = "edge";
 
-function Page() {
+export default function Page() {
   return (
-    <div className="flex">
-      <SwapPage />
-    </div>
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="flex">
+        <ClientSwapPage />
+      </div>
+    </Suspense>
   );
 }
-
-
-export default observer(Page);

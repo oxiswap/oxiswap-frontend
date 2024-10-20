@@ -1,8 +1,11 @@
 import { Suspense } from "react";
 import { SwapSkeleton } from "./SwapSkeleton";
 import SwapPageServer from './SwapPageServer';
+import { Metadata } from 'next';
 
-export const runtime = "edge";
+export const metadata: Metadata = {
+  title: 'Swap',
+};
 
 export default function SwapPage() {
   return (

@@ -3,7 +3,10 @@ import Image from "next/image";
 import { PositionProps } from "@utils/interface";
 import { Skeleton } from "antd";
 import { observer } from "mobx-react";
-
+import DrawIcon from '@components/AssetIcon/DrawAssetIcon';
+import { useStores } from "@stores/useStores";
+import { estimateAmounts } from '@utils/calculateAssetAmounts';
+import { Account } from "fuels";
 
 const NoPositionDiv: React.FC<Pick<PositionProps, 'noPositionSpan1' >> = observer(({ noPositionSpan1 }) => {
   return (
@@ -14,7 +17,7 @@ const NoPositionDiv: React.FC<Pick<PositionProps, 'noPositionSpan1' >> = observe
   );
 });
 
-const PositionDiv: React.FC<Pick<PositionProps, 'assets' | 'cardClick' | 'isExplore' | 'type'>> = observer(({ assets, cardClick, isExplore, type }) => {
+const PositionDiv: React.FC<Pick<PositionProps, 'assets' | 'cardClick' | 'isExplore' | 'type' | 'amounts'>> = observer(({ assets, cardClick, isExplore, type, amounts }) => {
   return (
     <button 
       onClick={cardClick}
@@ -28,7 +31,11 @@ const PositionDiv: React.FC<Pick<PositionProps, 'assets' | 'cardClick' | 'isExpl
         {assets?.map((asset, index) => (
           <React.Fragment key={index}>
             <div className="flex items-center"> 
-              <Image src={asset.icon} alt={asset.name} width={16} height={16} className="mr-2" />
+              {asset.icon ? (
+                <Image src={asset.icon} alt={asset.name} width={16} height={16} className="mr-2" />
+              ) : (
+                <DrawIcon assetName={asset.name} className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-white text-[8px] mr-2" />
+              )}
               <span className="text-base leading-none">{asset.symbol}</span> 
             </div>
             {index < assets.length - 1 && <span className="mx-1 text-text-500">/</span>}
@@ -47,7 +54,7 @@ const PositionDiv: React.FC<Pick<PositionProps, 'assets' | 'cardClick' | 'isExpl
             <span className="mr-2">
               {asset.symbol}:{" "} 
               <span className="text-black">
-                {asset.value || '0.0000'}
+                {amounts?.[index] || '0.0000'}
               </span>
             </span>
             {index < assets.length - 1 && <span className="mr-2">•</span>}
@@ -68,9 +75,28 @@ const MyPosition: React.FC<PositionProps> = observer(({
   assets, 
   type,
   isExplore,
+  poolAssetId
 }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [amounts, setAmounts] = useState<[string, string]>(['0', '0']);
 
+  const { balanceStore, accountStore } = useStores();
+  const exactBalance = balanceStore.getExactBalance(poolAssetId, 9);
+
+  useEffect(() => {
+    const fetchAmounts = async () => {
+      try {
+        const [reserveIn, reserveOut] = await estimateAmounts(assets, exactBalance, accountStore.getWallet as Account);
+        setAmounts([reserveIn, reserveOut]);
+      } catch (error) {
+        console.error('Error estimating amounts:', error);
+      }
+    };
+
+    fetchAmounts();
+  }, [assets, exactBalance, accountStore.getWallet]);
+
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -98,7 +124,7 @@ const MyPosition: React.FC<PositionProps> = observer(({
         </div>
       )}
 
-      <PositionDiv assets={assets} cardClick={cardClick} isExplore={isExplore} type={type} />
+      <PositionDiv assets={assets} cardClick={cardClick} isExplore={isExplore} type={type} amounts={amounts} />
 
       {(isCardOpen && isExplore) && (
         <div className="flex flex-row border-t-1 py-3 px-4 space-x-2">

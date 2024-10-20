@@ -9,7 +9,7 @@ import { List } from 'antd';
 import { PoolButton } from "./PoolButton";
 import { fetchPools } from "@utils/api";
 
-export const PoolPageContent = observer(({ initialPools }: { initialPools: PoolButtonProps[] }) => {
+export const PoolPageContent = observer(() => {
   const [isLoading, setIsLoading] = useState(false);
   const { poolStore } = useStores();
   
@@ -21,8 +21,7 @@ export const PoolPageContent = observer(({ initialPools }: { initialPools: PoolB
       setIsLoading(false);
     }
     fetchPoolsData();
-    // poolStore.setPoolButtonProps(initialPools);
-  }, [initialPools, poolStore]);
+  }, [poolStore]);
 
   const handleOnClick = useCallback((pool: PoolButtonProps) => {
     poolStore.setPool(pool);
