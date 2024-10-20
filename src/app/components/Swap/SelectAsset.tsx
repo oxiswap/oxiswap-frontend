@@ -9,6 +9,7 @@ import SearchInput from '@components/SearchInput';
 import { useFilteredAssets } from '@hooks/useFilteredAssets';
 import { useEthPrice } from '@hooks/useEthPrice';
 import styles from '@src/app/SelectAsset.module.css';
+import DrawAssetIcon from '@components/AssetIcon/DrawAssetIcon';
 
 const SelectAsset: React.FC<SelectAssetProps> = observer(({ onAction, assets, popularAssets, isFromAsset, isSwapAction }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -88,9 +89,7 @@ const SelectAsset: React.FC<SelectAssetProps> = observer(({ onAction, assets, po
       );
     } else {
       return (
-        <div className="w-8 h-8 mr-3 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
-          {asset.name.slice(0, 2).toUpperCase()}
-        </div>
+        <DrawAssetIcon assetName={asset.name} className="w-8 h-8 mr-3 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold" />
       );
     }
   };
