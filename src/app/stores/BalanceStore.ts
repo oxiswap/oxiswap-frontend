@@ -75,7 +75,7 @@ class BalanceStore {
   getBalance = (assetId: string, decimals: number | undefined) => {
     const b = this.balances.get(assetId);
     if (b) {
-      return this.formatBalance(Number(b), decimals);
+      return this.formatBalance(b.toString(), decimals);
     }
     return '0';
   };

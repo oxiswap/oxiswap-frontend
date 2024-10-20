@@ -1,0 +1,14 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+Disallow: /blockchain
+Disallow: /utils
+
+# Host
+Host: https://oxiswap.com
+
+# Sitemaps
+Sitemap: https://oxiswap.com/sitemap.xml

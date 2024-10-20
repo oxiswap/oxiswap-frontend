@@ -27,7 +27,7 @@ const RemoveLiquidityDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observ
   const factory = new CryptoFactory(accountStore.getWallet as Account);
   const routerContract = new CryptoRouter(accountStore.getWallet as Account);
 
-  const amounts = useCalculateAssetAmounts(pool.assets,poolStore.removeLiquidityAmounts);
+  const { amounts } = useCalculateAssetAmounts(pool.assets, poolStore.removeLiquidityAmounts);
   
   useEffect(() => {
     const getButtonName = ({isConnected, manageName, amount, balance}: {isConnected: boolean, manageName: string, amount: string, balance: string}) => {

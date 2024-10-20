@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useStores } from "@stores/useStores";
 import { PoolButtonProps } from "@utils/interface";
+import DrawAssetIcon from "@components/AssetIcon/DrawAssetIcon";
 
 export const PoolButton: React.FC<Pick<PoolButtonProps, 'assets' | 'type' | 'tvl' | 'apr' | 'poolAssetId'>> = React.memo(({ assets, type, tvl, apr, poolAssetId }) => {
   const router = useRouter();
@@ -17,19 +18,33 @@ export const PoolButton: React.FC<Pick<PoolButtonProps, 'assets' | 'type' | 'tvl
   return (
     <div className="block w-full">
       <button className="flex flex-row text-black items-center justify-between w-full px-6 py-6 bg-white rounded-3xl hover:bg-blue-100 " onClick={handleClick} >
-        <div className="flex -space-x-2">
-          {assets.map((asset, index) => (
-            <Image 
-              key={index}
-              src={asset.icon} 
-              alt={asset.symbol} 
-              width={24} 
-              height={24} 
-              className={`rounded-full border-2 border-white ${index > 0 ? 'relative' : ''}`}
-              style={{ zIndex: assets.length - index }}
-            />
-          ))}
-        </div>
+      <div className="flex items-center">
+        {assets.map((asset, index) => (
+          <div
+            key={index}
+            className="relative"
+            style={{
+              marginLeft: index > 0 ? '-0.5rem' : '0',
+              zIndex: assets.length - index,
+            }}
+          >
+            {asset.icon ? (
+              <Image 
+                src={asset.icon} 
+                alt={asset.symbol} 
+                width={32} 
+                height={32} 
+                className="rounded-full border-2 border-white"
+              />
+            ) : (
+              <DrawAssetIcon 
+                assetName={asset.name} 
+                className="w-8 h-8 rounded-full border-2 border-white bg-blue-500 flex items-center justify-center text-white font-bold"
+              />
+            )}
+          </div>
+        ))}
+      </div>
 
         <div className="flex flex-col flex-grow ml-4">
           <div className="flex items-center space-x-2">
@@ -47,8 +62,8 @@ export const PoolButton: React.FC<Pick<PoolButtonProps, 'assets' | 'type' | 'tvl
             </div>
           </div>
           <div className="flex space-x-4 text-xs mt-1">
-            <span className="text-gray-500">TVL: <span className="text-black">{tvl}</span></span>
-            <span className="text-gray-500">APR: <span className="text-black">{apr}</span></span>
+            <span className="text-gray-500">TVL: <span className="text-black">{tvl && tvl !== '$NaN' ? tvl : '-'}</span></span>
+            <span className="text-gray-500">APR: <span className="text-black">{apr && apr !== '$NaN' ? apr : '-'}</span></span>
           </div>
         </div>
 

@@ -7,7 +7,7 @@ import { observer } from "mobx-react";
 import { useStores } from "@stores/useStores";
 import PopupModal from '@components/PopupModal';
 import PositionConfirm from '@components/Position/PositionConfirm';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import SwapNotification from '@components/Swap/SwapNotification';
 import { Asset, PoolDetailProps } from "@utils/interface";
 import PoolNameDiv from "./PoolName";
@@ -16,6 +16,8 @@ import StatsDiv from "./StatsDiv";
 import AssetDiv from "./AssetDiv";
 import RightIcon from '@assets/icons/rightIcon';
 import { useEthPrice } from '@hooks/useEthPrice';
+import { fetchPoolDetail } from "@utils/api";
+
 
 const AddLiquidityInputDiv = lazy(() => import("@components/Pool/AddLiquidity"));
 const RemoveLiquidityDiv = lazy(() => import("@components/Pool/RemoveLiquidity"));
@@ -23,13 +25,56 @@ const MyPosition = lazy(() => import("@components/Pool/MyPosition"));
 const Rewards = lazy(() => import("@components/Pool/Rewards"));
 
 
-const PoolDetail = observer(() => {
+const PoolDetail: React.FC<Pick<PoolDetailProps, 'poolAssetId' | 'initialData'>> = observer(({ poolAssetId: propPoolAssetId, initialData }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const [pathName, setPathName] = useState("Add");
+  const [poolId, setPoolId] = useState(propPoolAssetId);
   const [liquidityCardOpen, setLiquidityCardOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { poolStore, positionStore, notificationStore } = useStores();
   useEthPrice();
+
+  useEffect(() => {
+    if (!propPoolAssetId) {
+      const pathSegments = pathname.split('/');
+      const urlPoolId = pathSegments[pathSegments.length - 1];
+      if (urlPoolId) {
+        setPoolId(urlPoolId);
+      } else {
+        console.error('Pool ID not found in URL');
+        router.push('/explore/pool');
+      }
+    }
+  }, [propPoolAssetId, pathname]);
+
+  useEffect(() => {
+    if (initialData) {
+      poolStore.setPool(initialData);
+      positionStore.setManageName("Add");
+      setIsLoading(false);
+    } else {
+      const fetchPoolData = async () => {
+        if (!poolId) {
+          return;
+        }
+        setIsLoading(true);
+        try {
+          const poolData = await fetchPoolDetail(poolId);
+          if (poolData) {
+            poolStore.setPool(poolData);
+            positionStore.setManageName("Add");
+          }
+        } catch (error) {
+          console.error('Error fetching pool ', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+      fetchPoolData();
+    }
+  }, [poolId, initialData]);
+
 
   useEffect(() => {
     setTimeout(() => {
@@ -121,6 +166,7 @@ const PoolDetail = observer(() => {
                       cardClick={() => setLiquidityCardOpen(!liquidityCardOpen)}
                       isCardOpen={liquidityCardOpen}
                       isExplore={true}
+                      poolAssetId={poolId}
                     />
                   )}
                   {pathName === "Rewards" && <Rewards />}

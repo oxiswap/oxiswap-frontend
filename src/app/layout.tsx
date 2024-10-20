@@ -2,7 +2,7 @@ import "./globals.css";
 import ClientWrapper from '@components/ClientWrapper';
 import { Providers } from '@components/Provider';
 import { fonts } from "../../utils/fonts";
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import Footer from "@components/Footer/Footer";
 
 
@@ -13,7 +13,10 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'OxiSwap - Lightning-Fast DEX powered by Fuel',
+  title: {
+    default: 'OxiSwap - Lightning-Fast DEX powered by Fuel',
+    template: '%s | OxiSwap 🐉',
+  },
   description: 'Trade, earn, and build on Fuel\'s most oxidized experience',
   keywords: ['DEX', 'cryptocurrency', 'exchange', 'DeFi', 'blockchain', 'OxiSwap', 'Oxi', 'FuelSwap', 'Fuel network', 'fuel token', 'oxi token'],
   authors: [{ name: 'OxiLabs' }],
@@ -36,14 +39,16 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     site: '@OxiSwap',
+    siteId: '1656320604432367617',
     creator: '@OxiSwap',
+    creatorId: '1656320604432367617',
     title: 'OxiSwap - Lightning-Fast DEX powered by Fuel',
     description: 'Trade, earn, and build on Fuel\'s most oxidized experience',
     images: [
       {
         url: 'https://images.oxiswap.com/og-image.png',
         width: 1200,
-        height: 675,
+        height: 630,
         alt: 'OxiSwap - Lightning-Fast DEX powered by Fuel',
       },
     ],

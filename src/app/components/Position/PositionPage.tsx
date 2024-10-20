@@ -8,17 +8,20 @@ import { observer } from "mobx-react";
 import { Skeleton } from 'antd';
 import { fetchUserPositions } from "@utils/api";
 import AddIcon from "@assets/icons/AddIcon";
+import { PoolButtonProps } from "@utils/interface";
 
 const PositionPage = observer(() => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const { positionStore, accountStore } = useStores();
+  const [newFetchData, setNewFetchData] = useState<PoolButtonProps[]>([]);
 
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
       try {
         const formattedData = await fetchUserPositions(accountStore.address || '');
+        setNewFetchData(formattedData);
         positionStore.setAssets(formattedData);
         positionStore.setAllInitialize();
       } catch (error) {
@@ -64,6 +67,7 @@ const PositionPage = observer(() => {
                 cardClick={() => {}}
                 isCardOpen={false}
                 isExplore={false}
+                poolAssetId=""
               />
             ) : (
               positionStore.assets.map((asset, index) => (
@@ -78,6 +82,7 @@ const PositionPage = observer(() => {
                     cardClick={() => {}}
                     isCardOpen={false}
                     isExplore={false}
+                    poolAssetId={newFetchData[index].poolAssetId}
                   />
                 </React.Fragment>
               ))

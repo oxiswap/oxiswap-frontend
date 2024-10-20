@@ -2,7 +2,11 @@ import { setupDevPlatform } from '@cloudflare/next-on-pages/next-dev';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false,
+  reactStrictMode: true,
+  swcMinify: true,
+  experimental: {
+    runtime: 'edge',
+  },
   transpilePackages: ['@fuels/connectors', '@fuels/react'],
   webpack(config) {
     config.module.rules.push({

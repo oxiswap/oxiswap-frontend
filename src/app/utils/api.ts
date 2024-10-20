@@ -104,6 +104,25 @@ export async function fetchPools(): Promise<Pool[]> {
   }
 }
 
+export async function fetchPoolDetail(poolAssetId: string): Promise<Pool | null> {
+  try {
+    const { data, error } = await supabase.from('oxiswap_pools').select('*, updated_at').eq('pool_assetId', poolAssetId).order('updated_at', { ascending: false });
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    return convertPoolData(data[0]);
+  } catch (error) {
+    console.error('Error fetching pools:', error);
+    throw new Error('Failed to fetch pools');
+  }
+}
+
+
 export async function fetchUserPositions(address: string) {
   const { data, error } = await supabase
     .from('oxiswap_pool_info')

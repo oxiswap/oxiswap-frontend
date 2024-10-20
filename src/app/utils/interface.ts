@@ -77,6 +77,8 @@ export interface PositionProps {
   noPositionSpan1: string;
   isExplore: boolean;
   type:string;
+  poolAssetId: string;
+  amounts?: [string, string];
 }
 
 export interface PoolDetailProps {
@@ -86,6 +88,8 @@ export interface PoolDetailProps {
   buttonName: string;
   onButtonClick: () => void;
   isActive: boolean;
+  poolAssetId: string;
+  initialData?: any;
 }
 
 export interface RemoveLiquidityProps {
