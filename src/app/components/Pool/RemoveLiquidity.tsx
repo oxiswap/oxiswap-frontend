@@ -21,7 +21,7 @@ const RemoveLiquidityDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observ
   const router = useRouter();
   const [isSpin, setIsSpin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { poolStore, balanceStore, accountStore, buttonStore, positionStore, notificationStore} = useStores();
+  const { poolStore, balanceStore, accountStore, buttonStore, notificationStore} = useStores();
 
   const exactBalance = balanceStore.getExactBalance(pool.poolAssetId, 9);
   const factory = new CryptoFactory(accountStore.getWallet as Account);
@@ -33,35 +33,27 @@ const RemoveLiquidityDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observ
     const getButtonName = ({isConnected, manageName, amount, balance}: {isConnected: boolean, manageName: string, amount: string, balance: string}) => {
       if (manageName === "Remove") {
         if (!isConnected) {
-          buttonStore.setPositionButtonName("Connect Wallet");
-          buttonStore.setPositionButtonDisabled(false);
-          buttonStore.setPositionButtonClassName("bg-button-100/30 text-text-200 hover:border-white hover:bg-button-100/70");
+          buttonStore.setPositionButton("Connect Wallet", false, "bg-button-100/30 text-text-200 hover:border-white hover:bg-button-100/70");
           return;
         } 
 
         if (amount === "" || Number(amount) === 0) {
-          buttonStore.setPositionButtonName("Enter an Amount");
-          buttonStore.setPositionButtonDisabled(true);
-          buttonStore.setPositionButtonClassName("bg-oxi-bg-03 text-oxi-text-01");
+          buttonStore.setPositionButton("Enter an Amount", true, "bg-oxi-bg-03 text-oxi-text-01");
           return;
         } 
        
         if (Number(amount) > Number(balance)) {
-          buttonStore.setPositionButtonName("Insufficient Balance");
-          buttonStore.setPositionButtonDisabled(true);
-          buttonStore.setPositionButtonClassName("bg-oxi-bg-03 text-oxi-text-01");
+          buttonStore.setPositionButton("Insufficient Balance", true, "bg-oxi-bg-03 text-oxi-text-01");
           return;
         }
 
-        buttonStore.setPositionButtonName("Remove Liquidity");
-        buttonStore.setPositionButtonDisabled(false);
-        buttonStore.setPositionButtonClassName("bg-gradient-to-r from-blue-500 to-blue-700 text-white");
+        buttonStore.setPositionButton("Remove Liquidity", false, "bg-gradient-to-r from-blue-500 to-blue-700 text-white");
       }
     };
 
     getButtonName({
       isConnected: accountStore.isConnected,
-      manageName: positionStore.manageName,
+      manageName: poolStore.manageName,
       amount: poolStore.removeLiquidityAmounts,
       balance: exactBalance
     });
@@ -69,7 +61,7 @@ const RemoveLiquidityDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observ
     const disposer = reaction(
       () => ({
         isConnected: accountStore.isConnected,
-        manageName: positionStore.manageName,
+        manageName: poolStore.manageName,
         amount: poolStore.removeLiquidityAmounts,
         balance: exactBalance
       }),
@@ -77,7 +69,7 @@ const RemoveLiquidityDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observ
     );
 
     return () => disposer();
-  }, [accountStore, positionStore, balanceStore, buttonStore, pool.assets, poolStore]);
+  }, [accountStore, balanceStore, buttonStore, pool.assets, poolStore]);
 
   const removeMessage = `remove ${poolStore.removeLiquidityAmounts} liquidity to the ${pool.assets[0].symbol} / ${pool.assets[1].symbol}`;
 
@@ -90,27 +82,21 @@ const RemoveLiquidityDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observ
 
   const handelRemoveLiquidity = async () => {
     setIsSpin(true);
-    const notificationId = notificationStore.addNotification({
-      open: true,
-      type: 'submitted',
-      message: removeMessage
-    });
 
-    const handleRemove = () => {
-      notificationStore.setNotificationVisible('removeLiquidity', true);
-      notificationStore.transitionNotificationState(notificationId, 'submitted');
-    };
+    let results;
+
+    try {
+      results = await notificationStore.handleMultiStepTransactionNotification(
+        removeMessage,
+        routerContract.removeLiquidity(pool.poolAssetId, pool.assets, [poolStore.removeLiquidityAmounts], () => {}),
+        () => {}
+      );
+    } catch (error) {
+      console.error('Error removing liquidity:', error);
+    }
 
 
-    const result = await routerContract.removeLiquidity(pool.poolAssetId, pool.assets, [poolStore.removeLiquidityAmounts], handleRemove);
-
-    if (result.success){
-      // setIsLoading(false);
-      notificationStore.addNotification({
-          open: true,
-          type: 'succeed',
-          message: removeMessage
-      });
+    if (results.success){
 
       setIsSpin(false);
 
@@ -122,7 +108,6 @@ const RemoveLiquidityDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observ
       poolStore.setRemoveInitialization();
 
     } else {
-      notificationStore.setNotificationVisible('removeLiquidity', false);
       setIsSpin(false);
     }
   };

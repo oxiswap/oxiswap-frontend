@@ -3,6 +3,7 @@ import RootStore from '@stores/RootStore';
 import { IntervalUpdater } from '@utils/IntervalUpdater';
 import { CoinQuantity } from 'fuels';
 import { BN } from '@fuel-ts/math';
+import OxiBN from '@utils/BN';
 
 const UPDATE_INTERVAL = 5 * 1000;
 const ETH_ASSET_ID = '0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07';
@@ -67,30 +68,27 @@ class BalanceStore {
   getNativeBalance = () => {
     const b = this.balances.get(ETH_ASSET_ID);
     if (b) {
-      return this.formatBalance(Number(b), 9);
+      return OxiBN.formatUnits(b.toString(), 9).toFixed(6).toString();
     }
     return '0';
   };
 
-  getBalance = (assetId: string, decimals: number | undefined) => {
+  getBalance = (assetId: string, decimals: number = 9) => {
     const b = this.balances.get(assetId);
     if (b) {
-      return this.formatBalance(b.toString(), decimals);
+      return OxiBN.formatUnits(b.toString(), decimals).toFixed(6).toString();
     }
     return '0';
   };
 
   getExactBalance = (assetId: string, decimals: number | undefined) => {
-    const amount = this.balances.get(assetId);
-    if (amount) {
-      return (Number(amount) / 10 ** (decimals || 9)).toString();
+    const b = this.balances.get(assetId);
+    if (b) {
+      return new OxiBN(b.toString()).div(new OxiBN(10).pow(decimals || 9)).toString();
     }
     return '0';
   };
 
-  private formatBalance = (amount: number | string, decimals: number | undefined): string => {
-    return (Number(amount) / 10 ** (decimals || 9)).toFixed(6);
-  };
 }
 
 export default BalanceStore;

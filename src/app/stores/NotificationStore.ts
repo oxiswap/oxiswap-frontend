@@ -1,48 +1,18 @@
 import { makeObservable, observable, action } from "mobx";
-import  RootStore from "@stores/RootStore";
 import { Notification } from "@utils/interface";
 
-
 class NotificationStore {
-  @observable notificationVisible: boolean = false;
   @observable notifications: Notification[] = [];
-  @observable addLiquidityNotificationVisible: boolean = false;
-  @observable notificationStates: { [key: string]: boolean } = {
-    general: false,
-    addLiquidity: false
-  };
 
-
-  constructor(rootStore: RootStore) {
+  constructor() {
     makeObservable(this);
   }
 
-  
   @action
-  setNotificationVisible(key: string, visible: boolean) {
-    this.notificationStates[key] = visible;
-  }
-
-  @action
-  setAddLiquidityNotificationVisible(visible: boolean) {
-    this.addLiquidityNotificationVisible = visible;
-  }
-
-  @action
-  addNotification(notification: Omit<Notification, 'id'> & { id?: string }) {
-    const id = notification.id || Date.now().toString();
+  addNotification(notification: Omit<Notification, 'id'>): string {
+    const id = `${Date.now()}-${performance.now().toFixed(3)}`;
     this.notifications.push({ ...notification, id });
-    return id; 
-  }
-
-  @action
-  removeNotification(id: string) {
-    this.notifications = this.notifications.filter(n => n.id !== id);
-  }
-
-  @action
-  clearNotifications() {
-    this.notifications = [];
+    return id;
   }
 
   @action
@@ -54,17 +24,59 @@ class NotificationStore {
   }
 
   @action
-  transitionNotificationState(id: string, newType: 'submitted' | 'succeed' | 'error', newMessage?: string) {
-    const notification = this.getNotification(id);
-    if (notification) {
-      this.updateNotification(id, { type: newType, message: newMessage || notification.message });
+  removeNotification(id: string) {
+    this.notifications = this.notifications.filter(n => n.id !== id);
+  }
+
+  @action
+  async handleMultiStepTransactionNotification(
+    initialMessage: string,
+    transactionPromise: Promise<any>,
+    onAction?: () => void
+  ) {
+    const submittedId = this.addNotification({
+      open: true,
+      type: 'submitted',
+      message: `${initialMessage}`
+    });
+
+    try {
+      const result = await transactionPromise;
+      this.removeNotification(submittedId);
+
+      if (result.success) {
+        this.addNotification({
+          open: true,
+          type: 'succeed',
+          message: `${initialMessage}`
+        });
+        onAction && onAction();
+      } else if (result.userCancelled) {
+        this.addNotification({
+          open: true,
+          type: 'error',
+          message: 'Transaction Cancelled by user'
+        });
+      } else {
+        this.addNotification({
+          open: true,
+          type: 'error',
+          message: 'Transaction Failed'
+        });
+      }
+
+      return result;
+    } catch (error) {
+      this.removeNotification(submittedId);
+
+      this.addNotification({
+        open: true,
+        type: 'error',
+        message: `Transaction Failed`
+      });
+      throw error;
     }
   }
-
-  getNotification(id: string): Notification | undefined {
-    return this.notifications.find(n => n.id === id);
-  }
 }
-
 
 export default NotificationStore;

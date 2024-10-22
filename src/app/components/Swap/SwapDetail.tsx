@@ -67,12 +67,16 @@ const SwapDetail: React.FC<Pick<SwapDetailProps, 'isExpanded' | 'setIsExpanded'>
                 <SwapDetailDiv title="Price impact" value={`${swapStore.priceImpact}%`} price={''} />
                 <SwapDetailDiv 
                   title="Max slippage" 
-                  value={swapStore.maxSlippage} 
-                  price={`(\$${(Number(swapStore.maxSlippage) * Number(swapStore.swapRateValue) / Number(swapStore.swapRate)).toFixed(2)})`} 
+                  value={swapStore.maxSlippage === 'NaN' ? '' : swapStore.maxSlippage} 
+                  price={`
+                    (\$${(Number(swapStore.maxSlippage) * Number(swapStore.swapRateValue) / Number(swapStore.swapRate)).toFixed(2) === 'NaN' 
+                      ? '-' 
+                      : (Number(swapStore.maxSlippage) * Number(swapStore.swapRateValue) / Number(swapStore.swapRate)).toFixed(2)})
+                  `} 
                 />
                 <SwapDetailDiv 
                   title="Min received" 
-                  value={swapStore.minReceived} 
+                  value={swapStore.minReceived === 'NaN' ? '' : swapStore.minReceived} 
                   price={swapStore.toAsset.symbol} 
                 />
                 <SwapDetailDiv title="Route" value={swapStore.routePath} price={''}/>

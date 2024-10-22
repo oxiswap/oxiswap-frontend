@@ -10,7 +10,7 @@ interface FromAssetInputProps {
 }
 
 const FromAssetInput: React.FC<FromAssetInputProps> = observer(({ onAssetCardOpen }) => {
-  const { swapStore, accountStore } = useStores();
+  const { swapStore, accountStore, oracleStore } = useStores();
   const { currentBalance, handleInputChange } = useSwapInput(true);
 
   return (
@@ -22,7 +22,7 @@ const FromAssetInput: React.FC<FromAssetInputProps> = observer(({ onAssetCardOpe
       onChange={handleInputChange}
       onAssetCardOpen={onAssetCardOpen}
       asset={swapStore.fromAsset}
-      price={swapStore.fromAssetPrice}
+      price={oracleStore.assetPrices[0]}
       balance={accountStore.isConnected ? currentBalance : '0'}
       isFrom={true}
     />

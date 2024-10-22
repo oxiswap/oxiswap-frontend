@@ -6,16 +6,16 @@ class PositionStore {
   @observable assets: Position[] = [];
   @observable poolType: string = 'VolatilePool';
   @observable isPreview: boolean = false;
-  @observable addLiquidityAssets: Asset[] = [defaultETH];
+  @observable addLiquidityAssets: Asset[] = [];
   @observable addLiquidityAmounts: string[] = [];
   @observable liquidityReceiceAmount: string = '0';
   @observable depositAssets: boolean[] = [];
   @observable fromInput: boolean = true;
-  @observable manageName: string = '';
   @observable loadingStates: boolean[] = [];
   @observable private userInputs: string[] = [];
   @observable isPosition: boolean = true;
-
+  @observable reserves: [string, string] = ['0', '0'];
+  
   constructor(private rootStore: RootStore) {
     makeObservable(this);
 
@@ -70,11 +70,6 @@ class PositionStore {
   }
 
   @action
-  setManageName(name: string) {
-    this.manageName = name;
-  }
-
-  @action
   setAmount(amount: string, index: number) {
     this.addLiquidityAmounts[index] = amount;
   }
@@ -121,12 +116,15 @@ class PositionStore {
     this.liquidityReceiceAmount = '0';
     this.depositAssets = [];
     this.fromInput = true;
-    this.manageName = '';
     this.loadingStates = [];
     this.userInputs = [];
     this.isPosition = true;
   }
 
+  @action
+  setReserves(reserves: [string, string]) {
+    this.reserves = reserves;
+  }
 
 }
 

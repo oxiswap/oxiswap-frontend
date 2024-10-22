@@ -8,13 +8,14 @@ import { useStores } from '@stores/useStores';
 import { debounce } from 'lodash';
 import { useAddLiquidityInput } from '@hooks/useAddLiquidityInput';
 import { Skeleton } from 'antd';
+import DrawAssetIcon from '@components/AssetIcon/DrawAssetIcon';
 
 const AssetInput: React.FC<Pick<Asset, 'symbol' | 'icon' | 'assetId' | 'decimals'>  & { assetIndex: number}> = observer(({ symbol, icon, assetId, decimals, assetIndex}) => {
   const [isLoading, setIsLoading] = useState(false);
   const {accountStore, positionStore, balanceStore, oracleStore} = useStores();
   const currentBalance = balanceStore.getBalance(assetId, decimals);
 
-  const { handleInputChange } = useAddLiquidityInput(assetIndex); 
+  const { handleInputChange } = useAddLiquidityInput(assetIndex, false); 
   const debouncedHandleInputChange = useMemo(() => debounce(handleInputChange, 300), [handleInputChange]); 
 
   useEffect(() => {
@@ -43,13 +44,17 @@ const AssetInput: React.FC<Pick<Asset, 'symbol' | 'icon' | 'assetId' | 'decimals
           className="bg-transparent text-xl outline-none text-black appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         />)}
         <div className="flex items-center justify-center bg-oxi-bg-02 p-2 rounded-xl transition-colors duration-200 text-black text-sm cursor-no-drop">
-          <Image
-            src={icon}
-            alt="assetIcon"
-            width={18}
-            height={18}
-            className="mr-2"
-          />
+          {icon ? (
+            <Image
+              src={icon}
+              alt="assetIcon"
+              width={18}
+              height={18}
+              className="mr-2"
+            />
+          ) : (
+            <DrawAssetIcon assetName={symbol} className="w-8 h-8 mr-3 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold" />
+          )}
           <span>{symbol}</span>
         </div>
       </div>
@@ -57,7 +62,7 @@ const AssetInput: React.FC<Pick<Asset, 'symbol' | 'icon' | 'assetId' | 'decimals
         {isLoading ? (
           <Skeleton.Input style={{ width: '66%%', height: '16px' }} active />
         ) : (
-          <span className="text-sm text-[#8f9ba7]">~${oracleStore.getAssetPrices(assetIndex)}</span>
+          <span className="text-sm text-[#8f9ba7]">${oracleStore.getAssetPrices(assetIndex)}</span>
         )}
         <div className="flex items-center">
           <span className="text-sm text-[#8f9ba7] mr-2">

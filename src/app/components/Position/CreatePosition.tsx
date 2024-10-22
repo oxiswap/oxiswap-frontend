@@ -8,7 +8,7 @@ import LiquidityButton from '@components/Pool/LiquidityButton';
 import PositionConfirm from '@components/Position/PositionConfirm';
 import PopupModal from '@components/PopupModal';
 import SelectAsset from '@components/Swap/SelectAsset';
-import { Asset, CreatePositionProps, AssetConfig} from '@utils/interface';
+import { Asset, CreatePositionProps, AssetConfig, defaultETH} from '@utils/interface';
 import { useStores } from '@stores/useStores';
 import { observer } from 'mobx-react';
 import { fetchServerAssetConfig } from "@utils/api";
@@ -17,6 +17,8 @@ import RightIcon from '@assets/icons/rightIcon';
 import SwapNotification from '@components/Swap/SwapNotification';
 import { nullAsset } from '@utils/interface';
 import { Skeleton } from 'antd';
+import { CryptoFactory } from "@blockchain/CryptoFactory"
+import { Account } from 'fuels';
 
 const AssetsDiv: React.FC<Pick<CreatePositionProps, 'assets' | 'onAction' | 'poolType'>> = observer(({ assets, onAction, poolType }) => {
   const assetNum = poolType === 'StablePool' ? 3 : 2;
@@ -80,11 +82,13 @@ const CreatePositionPage = observer(() => {
   const [selectedAssets, setSelectedAssets] = useState<Asset[]>([]);
   const [selectedPoolType, setSelectedPoolType] = useState<string>('VolatilePool');
   const [currentSelectionIndex, setCurrentSelectionIndex] = useState<number>(0);
-  const { positionStore, accountStore, buttonStore, notificationStore } = useStores();
-  const [assetConfig, setAssetConfig] = useState<AssetConfig>({
-    assets: [],
-    popularAssets: []
-  });
+  const { positionStore, accountStore, buttonStore, notificationStore, oracleStore } = useStores();
+  const [assetConfig, setAssetConfig] = useState<AssetConfig>({assets: [], popularAssets: []});
+  const [isConfirmPreview, setIsConfirmPreview] = useState(false);
+  const [poolAssetId, setPoolAssetId] = useState<string>("");
+  const [isSelectAsset, setIsSelectAsset] = useState(false);
+
+  const factory = new CryptoFactory(accountStore.getWallet as Account);
   const { connect } = useWallet();
 
   useEffect(() => {
@@ -93,19 +97,19 @@ const CreatePositionPage = observer(() => {
       setAssetConfig(assetConfig);
     }
     fetchAssetConfig();
+    setSelectedAssets([defaultETH]);
+    // positionStore.setAddLiquidityAssets([defaultETH]);
   },[])
 
   useEffect(() => {
     if (!accountStore.isConnected) {
-      buttonStore.setPositionButtonDisabled(false);
-      buttonStore.setPositionButtonName('Connect Wallet');
-      buttonStore.setPositionButtonClassName("bg-button-100/30 text-text-200 hover:border-white hover:bg-button-100/70");
-    } else {
-      buttonStore.setPositionButtonDisabled(true);
-      buttonStore.setPositionButtonName('Select assets');
-      buttonStore.setPositionButtonClassName("bg-oxi-bg-03 border border-oxi-text-01 text-oxi-text-01");
+      buttonStore.setPositionButton("Connect Wallet", false, "bg-button-100/30 text-text-200 hover:border-white hover:bg-button-100/70");
+    } else if (selectedAssets.length < (selectedPoolType === 'StablePool' ? 3 : 2)) {
+      buttonStore.setPositionButton("Select assets", true, "bg-oxi-bg-03 border border-oxi-text-01 text-oxi-text-01");
+    } else if (selectedAssets.length === (selectedPoolType === 'StablePool' ? 3 : 2)) {
+      buttonStore.setPositionButton("Add Liquidity", true, "bg-oxi-bg-03 border border-oxi-text-01 text-oxi-text-01");
     }
-  },[accountStore.isConnected]);
+  }, [accountStore.isConnected, selectedAssets, selectedPoolType, buttonStore]);
 
   const handleSelectPoolType = useCallback((poolType: string) => {
     setSelectedPoolType(poolType);
@@ -114,10 +118,12 @@ const CreatePositionPage = observer(() => {
     positionStore.setAddLiquidityAmounts([]);
   }, []);
 
+
   const handleAssetSelection = useCallback((asset: Asset | null) => {
     if (!asset) return;
     const maxTokens = selectedPoolType === 'StablePool' ? 3 : 2;
-  
+    positionStore.setAddLiquidityAmounts(Array(maxTokens).fill(''));    
+
     setSelectedAssets((prevAssets) => {
       let newAssets = [...prevAssets];
       
@@ -137,13 +143,22 @@ const CreatePositionPage = observer(() => {
       }
   
       positionStore.setAddLiquidityAssets([...newAssets]);
-      positionStore.setDepositAssets([]);
       return newAssets;
     });
   
+    const handlePoolAssetId = async () => {
+      const selectedAssets = positionStore.addLiquidityAssets.filter(a => a && a !== nullAsset);
+      if (selectedAssets.length >= 2) {
+        const { pair } = await factory.getPair(selectedAssets[0].assetId, selectedAssets[1].assetId);
+        setPoolAssetId(pair);
+      }
+    };
+  
+    handlePoolAssetId();
     setIsAssetCardOpen(false);
-    positionStore.setAddLiquidityAmounts([]);
-  }, [selectedPoolType, currentSelectionIndex, positionStore]);
+    setIsSelectAsset(true);
+  }, [selectedPoolType, currentSelectionIndex, positionStore, oracleStore, factory]);
+
 
   const handleAssetButtonClick = useCallback((index: number) => {
     setIsAssetCardOpen(true);
@@ -151,19 +166,15 @@ const CreatePositionPage = observer(() => {
   }, []);
 
   const handlePositionConfirmClose = () => {
-    // setIsPreview(false);
-    positionStore.setIsPreview(false);
-
-    if (notificationStore.addLiquidityNotificationVisible) {
-      setTimeout(() => {
-        router.push('/pool');
-      }, 3000);
-    }
+    setIsConfirmPreview(false);
+    buttonStore.setPositionButton(
+      "Add Liquidity",
+      true,
+      "bg-oxi-bg-03 border border-oxi-text-01 text-oxi-text-01"
+    );
+    positionStore.setAddLiquidityAmounts([]);
+    oracleStore.resetAssetPrices();
   };
-
-  useEffect(() => {
-    setSelectedAssets(positionStore.addLiquidityAssets);
-  }, []);
 
   return (
     <main className="w-full md:w-[520px] h-auto overflow-hidden text-black mx-auto max-w-[1200px] px-4 relative font-basel-grotesk-book pt-16 md:pt-20">
@@ -242,7 +253,7 @@ const CreatePositionPage = observer(() => {
 
           {accountStore.isConnected ? (
             <LiquidityButton
-              onAction={() => positionStore.setIsPreview(true)}
+              onAction={() => setIsConfirmPreview(true)}
             />
           ) : (
             <LiquidityButton
@@ -252,9 +263,17 @@ const CreatePositionPage = observer(() => {
         </div>
       </div>
 
-      {positionStore.isPreview && (
-        <PopupModal isOpen={positionStore.isPreview} onClose={handlePositionConfirmClose}>
-          <PositionConfirm onAction={handlePositionConfirmClose} />
+      {isConfirmPreview && (
+        <PopupModal isOpen={isConfirmPreview} onClose={handlePositionConfirmClose}>
+          <PositionConfirm 
+            assets={selectedAssets}
+            amounts={positionStore.addLiquidityAmounts}
+            poolAssetId={poolAssetId}
+            poolType={selectedPoolType}
+            isPreview={isConfirmPreview}
+            onAction={handlePositionConfirmClose}
+            isExplore={false}
+          />
         </PopupModal>
       )}
 
@@ -273,7 +292,7 @@ const CreatePositionPage = observer(() => {
       )}
       <div className='relative z-50'>
         <div className='fixed right-0 top-32 w-72 h-auto flex flex-col'>
-          {notificationStore.notificationStates['addLiquidity'] && (
+          {notificationStore.notifications.length > 0 && (
             <SwapNotification />
           )}
         </div>

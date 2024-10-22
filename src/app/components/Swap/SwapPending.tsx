@@ -11,13 +11,6 @@ const SwapPending: React.FC<Pick<ButtonProps, 'onAction'>> = ({ onAction }) => {
 
   const router = new CryptoRouter(accountStore.getWallet as Account);
   const swapMessage = `Swap ${swapStore.fromAmount} ${swapStore.fromAsset.name} for ${swapStore.toAmount} ${swapStore.toAsset.name}`;
-  const handleSwap = () => {
-    notificationStore.addNotification({
-      open: true,
-      type: 'submitted',
-      message: swapMessage
-    });
-  }
 
   useEffect(() => {
     const swap = async () => {
@@ -25,38 +18,39 @@ const SwapPending: React.FC<Pick<ButtonProps, 'onAction'>> = ({ onAction }) => {
         let result;
 
         if (swapStore.swapType === 0) {
-          result = await router.swapExactInput(
-            swapStore.fromAsset.assetId,
-            swapStore.toAsset.assetId,
-            Number(settingStore.slippage) / 100,
-            swapStore.fromAmount,
-            swapStore.fromAsset.decimals,
-            swapStore.toAmount,
-            swapStore.toAsset.decimals,
-            handleSwap
+          result = await notificationStore.handleMultiStepTransactionNotification(
+            swapMessage,
+            router.swapExactInput(
+              swapStore.fromAsset.assetId,
+              swapStore.toAsset.assetId,
+              Number(settingStore.slippage) / 100,
+              swapStore.fromAmount,
+              swapStore.fromAsset.decimals,
+              swapStore.toAmount,
+              swapStore.toAsset.decimals,
+              () => {}
+            ),
+            () => {onAction()}
           );
+
         } else {
-          result = await router.swapExactOutput(
-            swapStore.fromAsset.assetId,
-            swapStore.toAsset.assetId,
-            Number(settingStore.slippage) / 100,
-            swapStore.fromAmount,
-            swapStore.fromAsset.decimals,
-            swapStore.toAmount,
-            swapStore.toAsset.decimals,
-            handleSwap
+          result = await notificationStore.handleMultiStepTransactionNotification(
+            swapMessage,
+            router.swapExactOutput(
+              swapStore.fromAsset.assetId,
+              swapStore.toAsset.assetId,
+              Number(settingStore.slippage) / 100,
+              swapStore.fromAmount,
+              swapStore.fromAsset.decimals,
+              swapStore.toAmount,
+              swapStore.toAsset.decimals,
+              () => {}
+            ),
+            () => {onAction()}
           );
         }
 
         if (result.success) {
-          // swapStore.setIsPendingOpen(false);
-          notificationStore.addNotification({
-            open: true,
-            type: 'succeed',
-            message: swapMessage
-          });
-          setTimeout(onAction, 300);
-          
           const insertData = {
             tx_id: result.transactionId,
             address: accountStore.address,

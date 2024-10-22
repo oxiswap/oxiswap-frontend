@@ -136,6 +136,7 @@ class SwapStore {
   setAsset(assets: Asset[]) {
     this.assets = assets;
   }
+  
   @action
   setPopularAssets(popularAssets: string[]) {
     this.popularAssets = popularAssets;
