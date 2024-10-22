@@ -1,9 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useStores } from '@stores/useStores';
-import { CryptoRouter } from '@blockchain/CryptoRouter';
 import { CryptoFactory } from '@blockchain/CryptoFactory';
 import { CryptoPair } from '@blockchain/CryptoPair';
-import { IntervalUpdater } from '@utils/IntervalUpdater';
 import { Account, Provider } from 'fuels';
 import { ZERO_ADDRESS } from '@utils/interface';
 import BN from '@utils/BN';
@@ -14,19 +12,19 @@ import useDebounce from '@hooks/useDebounce';
 import { useOracle } from '@hooks/useOracle';
 import { FUEL_PROVIDER_URL } from '@utils/interface';
 
-export const useAddLiquidityInput = (assetIndex: number) => {
+export const useAddLiquidityInput = (assetIndex: number, isExplore: boolean) => {
   const [inputValue, setInputValue] = useState<string>('');
   const [isPair, setIsPair] = useState(false);
   const [pair, setPair] = useState<string>('');
-  const [updater, setUpdater] = useState<IntervalUpdater | null>(null);
   const [provider, setProvider] = useState<Provider | null>(null);
   const [lastInputIndex, setLastInputIndex] = useState<number | null>(null);
   const [reserves, setReserves] = useState<[string, string]>(['0', '0']);
   const [totalSupply, setTotalSupply] = useState<string>('0');
-  const { positionStore, balanceStore, accountStore, buttonStore, poolStore } = useStores();
-  const assets = useMemo(() => positionStore.addLiquidityAssets, [positionStore.addLiquidityAssets]);
+  const [amounts, setAmounts] = useState<string[]>(['0', '0']);
+  const [assetPrices, setAssetPrices] = useState<[string, string]>(['0', '0']);
+  const { positionStore, balanceStore, accountStore, buttonStore, poolStore, oracleStore } = useStores();
+  const assets = useMemo(() => isExplore ? poolStore.addLiquidityAssets : positionStore.addLiquidityAssets, [poolStore.addLiquidityAssets, positionStore.addLiquidityAssets]);
   
-  const router = new CryptoRouter(accountStore.getWallet as Account);
   const factory = new CryptoFactory(accountStore.getWallet as Account);
   const pairContract = new CryptoPair(accountStore.getWallet as Account);
 
@@ -47,7 +45,11 @@ export const useAddLiquidityInput = (assetIndex: number) => {
         const reserves = await pairContract.getReserves(pair);
         const totalSupply = await pairContract.getTotalSupply(pair);
         setReserves([reserves.value[0].toString(), reserves.value[1].toString()]);
-        poolStore.setReserves([reserves.value[0].toString(), reserves.value[1].toString()]);
+        if (isExplore) {
+          poolStore.setReserves([reserves.value[0].toString(), reserves.value[1].toString()]);
+        } else {
+          positionStore.setReserves([reserves.value[0].toString(), reserves.value[1].toString()]);
+        }
         setTotalSupply(totalSupply.value.toString());
         setIsPair(isPair);
         setPair(pair);
@@ -60,27 +62,43 @@ export const useAddLiquidityInput = (assetIndex: number) => {
     fetchPairInfo();
   }, [assets, accountStore]);
 
-  const oracleUpdate = useOracle(
-    accountStore.isConnected ? accountStore.getWallet as Account : provider as Provider, 
+  const oracleUpdate = useOracle({
+    account: accountStore.isConnected ? accountStore.getWallet as Account : provider as Provider, 
     pair, 
-    assets[0].assetId, 
-    assets[1] ? assets[1].assetId : ZERO_ADDRESS,
-    assets[0].decimals,
-    assets[1] ? assets[1].decimals : 9,
-  );
+    asset0: assets[0], 
+    asset1: assets[1],
+    amount0: amounts[0],
+    amount1: amounts[1],
+    ethPrice: oracleStore.ethPrice
+  });
+
+  useEffect(() => {
+    const updateOracleData = async () => {
+      const isZeroAddress = assets[0].assetId === ZERO_ADDRESS || assets[1].assetId === ZERO_ADDRESS;
+
+      if (!isZeroAddress && amounts[0] !== '0' && amounts[1] !== '0') {
+        const { assetPrices } = await oracleUpdate();
+        // setAssetPrices(assetPrices);
+        assetPrices.map((price, index) => {oracleStore.setAssetPrices(price, index)});
+      }
+    };
+    
+    if (assets.length > 1) {
+      updateOracleData();
+    }
+  }, [amounts]);
 
   const updateData = useCallback(async (amount?: string, inputIndex?: number, isUserInput?: boolean) => {
     if (!accountStore.getWallet || assets.some(asset => asset.assetId === ZERO_ADDRESS) || !isPair || !amount || inputIndex === undefined) return;
-    const isZeroAddress = assets[0].assetId === ZERO_ADDRESS || assets[1].assetId === ZERO_ADDRESS;
     const currentIndex = inputIndex ?? lastInputIndex ?? 0;
     const currentAmount = amount;
 
     if (new BN(currentAmount).gt(BN.ZERO)) {
       try {
-        let newAmounts = [...positionStore.addLiquidityAmounts];
+        let newAmounts = [...(isExplore ? poolStore.addLiquidityAmounts : positionStore.addLiquidityAmounts)];
         let liquidityAmount = new BN(0);
         let otherIndex = 0;
-        if (positionStore.poolType === 'StablePool') {
+        if (isExplore ? poolStore.poolType === 'StablePool' : positionStore.poolType === 'StablePool') {
           //TODO:StablePool
           newAmounts = [currentAmount];
         } else {
@@ -96,18 +114,26 @@ export const useAddLiquidityInput = (assetIndex: number) => {
           const inputIndex = currentIndex;
           otherIndex = 1 - inputIndex;
 
-          positionStore.setLoading(true, otherIndex);
+          if (isExplore) {
+            poolStore.setLoading(true, otherIndex);
+          } else {
+            positionStore.setLoading(true, otherIndex);
+          }
           const inputAmount = BN.parseUnits(currentAmount, assets[inputIndex].decimals || 9);
           const reserveIn = new BN(isAsset0First ? reserves[1] : reserves[0]);
           const reserveOut = new BN(isAsset0First ? reserves[0] : reserves[1]);
           const estimatedAmount = estimateAmount(inputAmount, reserveIn, reserveOut);
-          const inputDecimals = assets[inputIndex].decimals || 9
-          const otherDecimals = assets[otherIndex].decimals || 9
+          const inputDecimals = assets[inputIndex].decimals || 9;
+          const otherDecimals = assets[otherIndex].decimals || 9;
           newAmounts[inputIndex] = new BN(inputAmount.toString()).div(new BN(10).pow(inputDecimals)).toFixed(inputDecimals);
           newAmounts[otherIndex] = new BN(estimatedAmount.toString()).div(new BN(10).pow(otherDecimals)).toFixed(otherDecimals);
+
+          const newAmount0 = isAsset0First ? newAmounts[1] : newAmounts[0];
+          const newAmount1 = isAsset0First ? newAmounts[0] : newAmounts[1];
+
           liquidityAmount = estimateLiquidityAmount(
-            BN.parseUnits(newAmounts[0], inputDecimals),
-            BN.parseUnits(newAmounts[1], otherDecimals),
+            BN.parseUnits(newAmount0, inputDecimals),
+            BN.parseUnits(newAmount1, otherDecimals),
             new BN(reserves[0]),
             new BN(reserves[1]),
             new BN(totalSupply)
@@ -117,27 +143,46 @@ export const useAddLiquidityInput = (assetIndex: number) => {
 
         runInAction(() => {
           if (isUserInput) {
-            newAmounts[inputIndex] = positionStore.getUserInput(inputIndex);
+            newAmounts[inputIndex] = isExplore ? poolStore.getUserInput(inputIndex) : positionStore.getUserInput(inputIndex);
           }
-          positionStore.setLoading(false, otherIndex);
-          positionStore.setAddLiquidityAmounts(newAmounts);
-          positionStore.setLiquidityReceiceAmount(formatUnits(liquidityAmount.toString(), 9));
+          if (isExplore) {
+            poolStore.setLoading(false, otherIndex);
+            poolStore.setAddLiquidityAmounts(newAmounts);
+            poolStore.setLiquidityReceiceAmount(formatUnits(liquidityAmount.toString(), 9));
+          } else {
+            positionStore.setLoading(false, otherIndex);
+            positionStore.setAddLiquidityAmounts(newAmounts);
+            positionStore.setLiquidityReceiceAmount(formatUnits(liquidityAmount.toString(), 9));
+          }
+          setAmounts(newAmounts);
         });
-
-        if (!isZeroAddress) {
-          await oracleUpdate();
-        } 
 
         updateButtonState(newAmounts);
 
       } catch (error) {
         console.error('Error updating amounts:', error);
       } finally {
-        assets.forEach((_, index) => positionStore.setLoading(false, index));
+        assets.forEach((_, index) => {
+          if (isExplore) {
+            poolStore.setLoading(false, index);
+          } else {
+            positionStore.setLoading(false, index);
+          }
+        });
       }
     } else {
-      positionStore.setAddLiquidityAmounts(assets.map(() => ''));
-      assets.forEach((_, index) => positionStore.setLoading(false, index));
+      if (isExplore) {
+        poolStore.setAddLiquidityAmounts(assets.map(() => ''));
+      } else {
+        positionStore.setAddLiquidityAmounts(assets.map(() => ''));
+      }
+      assets.forEach((_, index) => {
+        if (isExplore) {
+          poolStore.setLoading(false, index);
+        } else {
+          positionStore.setLoading(false, index);
+        }
+      });
     }
   }, [accountStore.getWallet, isPair, assets, lastInputIndex, reserves, totalSupply]);
 
@@ -156,7 +201,11 @@ export const useAddLiquidityInput = (assetIndex: number) => {
       newAmount = newAmount.slice(0, newAmount.lastIndexOf('.') + 1);
     }
 
-    positionStore.setUserInput(newAmount, assetIndex);
+    if (isExplore) {
+      poolStore.setUserInput(newAmount, assetIndex);
+    } else {
+      positionStore.setUserInput(newAmount, assetIndex);
+    }
 
     if (new BN(newAmount).gt(BN.ZERO)) {
       newAmount = newAmount.replace(/^0+(?=\d)/, '');
@@ -167,62 +216,108 @@ export const useAddLiquidityInput = (assetIndex: number) => {
     const asset = assets[assetIndex];
     const currentBalance = balanceStore.getBalance(asset.assetId, asset.decimals);
 
-    positionStore.setAmount(newAmount, assetIndex);
+    if (isExplore) {
+      poolStore.setAmount(newAmount, assetIndex);
+    } else {
+      positionStore.setAmount(newAmount, assetIndex);
+    }
     setLastInputIndex(assetIndex);
 
     if (assets.every(a => a.assetId !== ZERO_ADDRESS) && isPair) {
       assets.forEach((_, index) => {
-        if (index !== assetIndex) positionStore.setLoading(true, index);
+        if (index !== assetIndex) {
+          if (isExplore) {
+            poolStore.setLoading(true, index);
+          } else {
+            positionStore.setLoading(true, index);
+          }
+        }
       });
     }
 
     if (accountStore.isConnected) {
       if (new BN(newAmount).gt(new BN(currentBalance))) {
-        buttonStore.setPositionButtonName('Insufficient Asset Balance');
-        buttonStore.setPositionButtonDisabled(true);
-        buttonStore.setPositionButtonClassName(`bg-oxi-bg-03 text-oxi-text-01 ${positionStore.isPosition ? "border border-oxi-text-01" : ""}`);
+        buttonStore.setPositionButton("Insufficient Asset Balance", true, `bg-oxi-bg-03 text-oxi-text-01 ${!isExplore ? "border border-oxi-text-01" : ""}`);
       } else {
-        if (assets.length === (positionStore.poolType === 'StablePool' ? 3 : 2)) {
-          buttonStore.setPositionButtonName('Preview');
-          buttonStore.setPositionButtonDisabled(false);
-          buttonStore.setPositionButtonClassName('bg-gradient-to-r from-blue-500 to-blue-700 text-white hover:from-blue-600 hover:to-blue-800 transition-all duration-300');
+        const isStablePool = isExplore 
+          ? poolStore.poolType === 'StablePool'
+          : positionStore.poolType === 'StablePool';
+
+        const expectedAssetCount = isStablePool ? 3 : 2;
+
+        if (assets.length === expectedAssetCount) {
+          buttonStore.setPositionButton(
+            "Preview", 
+            false, 
+            "bg-gradient-to-r from-blue-500 to-blue-700 text-white hover:from-blue-600 hover:to-blue-800 transition-all duration-300"
+          );
         }
       }
     }
     
     if (newAmount.length === 0) {
-      positionStore.setAddLiquidityAmounts([]);
-      assets.forEach((_, index) => positionStore.setLoading(false, index));
+      if (isExplore) {
+        poolStore.setAddLiquidityAmounts([]);
+        oracleStore.setAssetPrices("", 0);
+        oracleStore.setAssetPrices("", 1);
+        buttonStore.setPositionButton(
+          "Add Liquidity", 
+          true, 
+          "bg-oxi-bg-03 text-oxi-text-01"
+        );
+      } else {
+        positionStore.setAddLiquidityAmounts([]);
+        oracleStore.setAssetPrices("", 0);
+        oracleStore.setAssetPrices("", 1);
+        buttonStore.setPositionButton(
+          "Add Liquidity", 
+          true, 
+          "bg-oxi-bg-03 text-oxi-text-01 border border-oxi-text-01"
+        );
+      }
+      assets.forEach((_, index) => {
+        if (isExplore) {
+          poolStore.setLoading(false, index);
+        } else {
+          positionStore.setLoading(false, index);
+        }
+      });
     } 
   };
 
   const updateButtonState = (newAmounts?: string[]) => {
     if (!accountStore.isConnected) return;
 
-    if (assets.length < (positionStore.poolType === 'StablePool' ? 3 : 2)) {
-      buttonStore.setPositionButtonName('Select assets');
-      buttonStore.setPositionButtonDisabled(true);
-      buttonStore.setPositionButtonClassName(`bg-oxi-bg-03 text-oxi-text-01 ${positionStore.isPosition ? "border border-oxi-text-01" : ""}`);
+    const isStablePool = isExplore 
+      ? poolStore.poolType === 'StablePool'
+      : positionStore.poolType === 'StablePool';
+
+    const expectedAssetCount = isStablePool ? 3 : 2;
+
+    if (assets.length < expectedAssetCount) {
+      buttonStore.setPositionButton("Select assets", true, `bg-oxi-bg-03 text-oxi-text-01 ${!isExplore ? "border border-oxi-text-01" : ""}`);
     } else if (
-      assets.length === (positionStore.poolType === 'StablePool' ? 3 : 2) &&
+      assets.length === expectedAssetCount &&
       newAmounts?.every(amount => new BN(amount).eq(BN.ZERO))
     ) {
-      buttonStore.setPositionButtonName('Enter an amount');
-      buttonStore.setPositionButtonDisabled(true);
-      buttonStore.setPositionButtonClassName(`bg-oxi-bg-03 text-oxi-text-01 ${positionStore.isPosition ? "border border-oxi-text-01" : ""}`);
+      buttonStore.setPositionButton("Enter an amount", true, `bg-oxi-bg-03 text-oxi-text-01 ${!isExplore ? "border border-oxi-text-01" : ""}`);
     } else if (
       newAmounts && newAmounts.every(
         (amount, index) => 
           new BN(amount).gt(BN.ZERO) && new BN(amount).lt(new BN(balanceStore.getBalance(assets[index].assetId, assets[index].decimals))) 
       )
     ) {
-      buttonStore.setPositionButtonName('Preview');
-      buttonStore.setPositionButtonDisabled(false);
-      buttonStore.setPositionButtonClassName('bg-gradient-to-r from-blue-500 to-blue-700 text-white hover:from-blue-600 hover:to-blue-800 transition-all duration-300');
+      buttonStore.setPositionButton(
+        "Preview", 
+        false, 
+        "bg-gradient-to-r from-blue-500 to-blue-700 text-white hover:from-blue-600 hover:to-blue-800 transition-all duration-300"
+      );
     } else if (newAmounts && newAmounts.some((amount, index) => new BN(amount).gt(new BN(balanceStore.getBalance(assets[index].assetId, assets[index].decimals))))) {
-      buttonStore.setPositionButtonName('Insufficient Asset Balance');
-      buttonStore.setPositionButtonDisabled(true);
-      buttonStore.setPositionButtonClassName(`bg-oxi-bg-03 text-oxi-text-01 ${positionStore.isPosition ? "border border-oxi-text-01" : ""}`);
+      buttonStore.setPositionButton(
+        "Insufficient Asset Balance", 
+        true, 
+        `bg-oxi-bg-03 text-oxi-text-01 ${!isExplore ? "border border-oxi-text-01" : ""}`
+      );
     }
     
   };

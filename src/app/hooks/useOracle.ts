@@ -1,10 +1,25 @@
-'use client';
-import React, { useCallback } from 'react';
-import { Account, Address, Provider, returnZeroScript } from 'fuels';
+import { Account, Provider, Address } from 'fuels';
 import { CryptoPair } from '@blockchain/CryptoPair';
-import { useStores } from '@stores/useStores';
-import { ETH_ASSET_ID } from '@utils/interface';
 import BN from '@utils/BN';
+import { ETH_ASSET_ID, Asset } from '@utils/interface';
+import { useCallback } from 'react';
+
+interface OracleParams {
+  account: Account | Provider;
+  pair: string;
+  asset0: Asset;
+  asset1: Asset;
+  amount0: string;
+  amount1: string;
+  ethPrice: string;
+}
+
+interface OracleResult {
+  swapRate: string;
+  priceImpact: string;
+  assetPrices: [string, string];
+  rateValue: string;
+}
 
 function sortAssets(asset1: string, asset2: string) {
   const new_asset1 = Address.fromString(asset1).toB256();
@@ -14,7 +29,6 @@ function sortAssets(asset1: string, asset2: string) {
   } 
   return [new_asset1, new_asset2];
 }
-
 
 function getPriceImpact(fromAssetIsAsset0: boolean, fromAmount: string, reserve0: string, reserve1: string, fromDecimals: number | undefined, toDecimals: number | undefined) { 
   const fromAmountFormated = BN.parseUnits(fromAmount.toString(), fromDecimals|| 9);
@@ -52,74 +66,68 @@ function getPriceImpact(fromAssetIsAsset0: boolean, fromAmount: string, reserve0
   return { priceImpact, priceImpactValue };
 }
 
+const calculateAssetPrice = (amount: string, ethPrice: string, decimals: number, swapRate: number = 1): string => {
+  return new BN(amount)
+    .mul(new BN(ethPrice))
+    .mul(new BN(10).pow(decimals))
+    .div(new BN(swapRate))
+    .div(new BN(10).pow(9))
+    .toFixed(6);
+};
 
-export const useOracle = (account: Account | Provider, pair: string, asset1: string, asset2: string, fromDecimals: number | undefined, toDecimals: number | undefined) => {
-  const { oracleStore, swapStore, settingStore, buttonStore, positionStore } = useStores();
-  const pairContract = new CryptoPair(account);
-  const [new_asset1, new_asset2] = sortAssets(asset1, asset2);
-  
-  const updateRate = useCallback(async () => {
-    const reserves = await pairContract.getReserves(pair);
+export const useOracle = (params: OracleParams) => {
+  const updateOracle = useCallback(async (): Promise<OracleResult> => {
+    const pairContract = new CryptoPair(params.account);
+    const [new_asset0, new_asset1] = sortAssets(params.asset0.assetId, params.asset1.assetId);
+    const reserves = await pairContract.getReserves(params.pair);
 
-    const isFromAssetFirst = new_asset1 === swapStore.fromAsset.assetId;
+    const isAsset0First = new_asset0 === params.asset0.assetId;
+    const newAmount0 = isAsset0First ? params.amount0 : params.amount1;
+    const newAmount1 = isAsset0First ? params.amount1 : params.amount0;
+    const swapRate = isAsset0First ? reserves.value[1] / reserves.value[0] : reserves.value[0] / reserves.value[1];
 
-    const swapRate = isFromAssetFirst ? reserves.value[1] / reserves.value[0] : reserves.value[0] / reserves.value[1];
+    const priceImpact = getPriceImpact(
+      isAsset0First,
+      params.amount0,
+      reserves.value[0],
+      reserves.value[1],
+      params.asset0.decimals,
+      params.asset1.decimals
+    );
 
-    const { priceImpact } = getPriceImpact(isFromAssetFirst, swapStore.fromAmount, reserves.value[0], reserves.value[1], fromDecimals, toDecimals);
+    const formattedPriceImpact = Number(priceImpact) > 0.01 ? Number(priceImpact).toFixed(2) : '<0.01';
 
-    const formattedPriceImpactPercentage = Number(priceImpact) > 0.01 ? Number(priceImpact).toFixed(2) : '<0.01';
-    swapStore.setPriceImpact(`${formattedPriceImpactPercentage}`);
+    let price0: string, price1: string, price0Value: string, price1Value: string, rateValue: string;
 
-    const fixedIndex = swapRate > 1 ? 2 : 10;
-    swapStore.setSwapRate(swapRate.toFixed(fixedIndex));
-
-    const isETHInvolved = new_asset1 === ETH_ASSET_ID || new_asset2 === ETH_ASSET_ID;
-    let swapRateValue = '0';
-
-    if (isETHInvolved) {
-      const isFromAssetETH = swapStore.fromAsset.assetId === ETH_ASSET_ID;
-      const isToAssetETH = swapStore.toAsset.assetId === ETH_ASSET_ID;
-      const isAddFromAssetETH = positionStore.addLiquidityAssets[0]?.assetId === ETH_ASSET_ID;
-      const isAddToAssetETH = positionStore.addLiquidityAssets[1]?.assetId === ETH_ASSET_ID;
-      if (isFromAssetETH || isToAssetETH || isAddFromAssetETH || isAddToAssetETH) {
-        if (isFromAssetETH ) {
-          swapRateValue = oracleStore.ethPrice;
-          swapStore.setFromAssetPrice((Number(swapStore.fromAmount) * Number(swapRateValue)).toFixed(4));
-          swapStore.setToAssetPrice((Number(swapStore.toAmount) * (10 ** (toDecimals || 9)) / (10 ** (fromDecimals || 9)) / Number(swapRate) * Number(swapRateValue)).toFixed(4));
-        } else if (isToAssetETH) {
-          swapRateValue = (Number(swapRate) * Number(oracleStore.ethPrice)).toFixed(9);
-          swapStore.setFromAssetPrice((Number(swapStore.fromAmount) * (10 ** (fromDecimals || 9)) / (10 ** (toDecimals || 9)) * Number(swapRateValue)).toFixed(4));
-          swapStore.setToAssetPrice((Number(swapStore.toAmount) * Number(oracleStore.ethPrice)).toFixed(4));
-        } 
-        if (isAddFromAssetETH) {
-          swapRateValue = oracleStore.ethPrice;
-          oracleStore.setAssetPrices((Number(positionStore.getAmount(0)) * Number(swapRateValue)).toFixed(4), 0);
-          oracleStore.setAssetPrices((Number(positionStore.getAmount(1)) * (10 ** (toDecimals || 9)) / (10 ** (fromDecimals || 9)) / Number(swapRate) * Number(swapRateValue)).toFixed(4), 1)
-        } else if (isAddToAssetETH) {
-          console.log('isAddToAssetETH');
-          swapRateValue = (Number(swapRate) * Number(oracleStore.ethPrice)).toFixed(9);
-          oracleStore.setAssetPrices((Number(positionStore.getAmount(1)) * Number(swapRateValue)).toFixed(4), 1);
-          oracleStore.setAssetPrices((Number(positionStore.getAmount(0)) * (10 ** (fromDecimals || 9)) / (10 ** (toDecimals || 9)) / Number(swapRate) * Number(swapRateValue)).toFixed(4), 0);
-        }
+    if (params.asset0.assetId === ETH_ASSET_ID || params.asset1.assetId === ETH_ASSET_ID) {
+      if (params.asset0.assetId === ETH_ASSET_ID) {
+        rateValue = params.ethPrice;
+        price0 = calculateAssetPrice(params.amount0, params.ethPrice, params.asset0.decimals || 9);
+        price1 = calculateAssetPrice(params.amount1, params.ethPrice, params.asset1.decimals || 9, swapRate);
+        // price0Value = new BN(params.amount0).mul(new BN(params.ethPrice)).toFixed(4);
+        // price1Value = new BN(params.amount1).mul(new BN(10).pow(params.asset1.decimals || 9)).div(new BN(swapRate).pow(params.asset0.decimals || 9)).mul(new BN(params.ethPrice)).toFixed(4);
+      } else {
+        price0 = calculateAssetPrice(newAmount0, params.ethPrice, params.asset0.decimals || 9, 1 / swapRate);
+        price1 = calculateAssetPrice(newAmount1, params.ethPrice, params.asset1.decimals || 9);
+        rateValue = new BN(swapRate).mul(new BN(params.ethPrice)).toFixed(9);
+        // price0Value = new BN(params.amount0).mul(new BN(10).pow(params.asset0.decimals || 9)).div(new BN(rateValue).pow(params.asset1.decimals || 9)).toFixed(4);
+        // price1Value = new BN(params.amount1).mul(new BN(params.ethPrice)).toFixed(4);
       }
+    } else {
+      price0 = '0';
+      price1 = '0';
+      price0Value = '0';
+      price1Value = '0';
+      rateValue = '0';
     }
 
-    swapStore.setSwapRateValue(swapRateValue);
+    return {
+      swapRate: swapRate.toFixed(swapRate > 1 ? 2 : 10),
+      priceImpact: formattedPriceImpact,
+      assetPrices: [price0, price1],
+      rateValue: rateValue
+    };
+  }, [params]);
 
-    const slippage = Number(settingStore.slippage) / 100;
-    const toAmount = Number(swapStore.toAmount);
-    swapStore.setMinReceived((toAmount * (1 - slippage)).toFixed(6));
-    swapStore.setMaxSlippage((toAmount * slippage).toFixed(6));
-    swapStore.setRoutePath(`${swapStore.fromAsset.symbol} - ${swapStore.toAsset.symbol}`);
-    
-    if (new BN(formattedPriceImpactPercentage).div(1000).gt(new BN(slippage).div(100))) {
-      buttonStore.setSwapButtonPlay('Slippage is too high');
-      buttonStore.setSwapButtonDisabled(true);
-      buttonStore.setButtonClassName('bg-oxi-bg-03 text-oxi-text-01');
-    }
-  }, [pairContract, pair, swapStore, settingStore, oracleStore]);
-
-
-  return updateRate;
-
+  return updateOracle;
 };

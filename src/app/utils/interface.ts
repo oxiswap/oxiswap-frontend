@@ -1,3 +1,5 @@
+import { Account, Provider } from 'fuels';
+
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
 export const ETH_ASSET_ID = '0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07';
 export const FUEL_PROVIDER_URL = 'https://mainnet.fuel.network/v1/graphql';
@@ -112,7 +114,12 @@ export interface CreatePositionProps {
 
 export interface PositionConfirmProps {
   assets: Asset[];
+  amounts: string[];
   onAction: () => void;
+  isExplore: boolean;
+  poolAssetId: string;
+  poolType: string;
+  isPreview: boolean;
 }
 
 export interface Position {

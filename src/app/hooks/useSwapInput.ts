@@ -19,7 +19,7 @@ export const useSwapInput = (isFromInput: boolean) => {
   const [router, setRouter] = useState<CryptoRouter | null>(null);
   const [factory, setFactory] = useState<CryptoFactory | null>(null);
   const [src20, setSrc20] = useState<Src20Standard | null>(null);
-  const { swapStore, balanceStore, accountStore, buttonStore, settingStore } = useStores();
+  const { swapStore, balanceStore, accountStore, buttonStore, settingStore, oracleStore } = useStores();
   const asset = isFromInput ? swapStore.fromAsset : swapStore.toAsset;
   const currentBalance = balanceStore.getBalance(asset.assetId, asset.decimals);
 
@@ -56,14 +56,39 @@ export const useSwapInput = (isFromInput: boolean) => {
     }
   }, [factory, fetchPairInfo]);
 
-  const oracleUpdate = useOracle(
-    accountStore.isConnected ? accountStore.getWallet as Account : provider as Provider, 
+  const oracleUpdate = useOracle({
+    account: accountStore.isConnected ? accountStore.getWallet as Account : provider as Provider, 
     pair, 
-    swapStore.fromAsset.assetId, 
-    swapStore.toAsset.assetId,
-    swapStore.fromAsset.decimals,
-    swapStore.toAsset.decimals,
-  );
+    asset0: swapStore.fromAsset, 
+    asset1: swapStore.toAsset,
+    amount0: swapStore.fromAmount,
+    amount1: swapStore.toAmount,
+    ethPrice: oracleStore.ethPrice
+  });
+
+  useEffect(() => {
+    const updateOracleData = async () => {
+      const isZeroAddress = swapStore.fromAsset.assetId === ZERO_ADDRESS || swapStore.toAsset.assetId === ZERO_ADDRESS;
+
+      if (!isZeroAddress && swapStore.fromAmount !== '0' && swapStore.toAmount !== '0') {
+        const { swapRate, priceImpact, assetPrices, rateValue } = await oracleUpdate();
+        swapStore.setSwapRate(swapRate);
+        swapStore.setPriceImpact(priceImpact);
+        assetPrices.map((price, index) => {oracleStore.setAssetPrices(price, index)});
+        const slippage = new BN(settingStore.slippage).div(100);
+        const minReceived = new BN(swapStore.toAmount).mul(new BN(1).sub(slippage));
+        const maxSlippage = new BN(swapStore.toAmount).mul(new BN(slippage));
+        swapStore.setMinReceived(minReceived.toString());
+        swapStore.setMaxSlippage(maxSlippage.toString());
+        swapStore.setSwapRateValue(rateValue);
+        swapStore.setRoutePath(swapStore.fromAsset.symbol + ' - ' + swapStore.toAsset.symbol);
+      }
+    };
+    
+    if (!isZeroAddress) {
+      updateOracleData();
+    }
+  }, [swapStore.fromAmount, swapStore.toAmount, isZeroAddress, oracleUpdate]);
 
   const updateData = useCallback(async (amount?: string) => {
     if (!isPair || !router) return;
@@ -174,9 +199,7 @@ export const useSwapInput = (isFromInput: boolean) => {
     if (!accountStore.isConnected) return;
 
     const setButtonState = (text: string, disabled: boolean, className: string) => {
-      buttonStore.setSwapButtonPlay(text);
-      buttonStore.setSwapButtonDisabled(disabled);
-      buttonStore.setButtonClassName(className);
+      buttonStore.setSwapButton(text, disabled, className);
     };
 
     if (!isPair && pair === ZERO_ADDRESS) {

@@ -30,8 +30,11 @@ class AccountStore {
     runInAction(() => {
       this.wallet = wallet;
       this.address = wallet.address.toB256();
-      this.rootStore.buttonStore.setSwapButtonPlay('Swap');
-      this.rootStore.buttonStore.setSwapButtonDisabled(true);
+      this.rootStore.buttonStore.setSwapButton(
+        'Swap', 
+        false, 
+        'bg-oxi-bg-03 text-oxi-text-01'
+      );
     });
   };
 
@@ -39,7 +42,11 @@ class AccountStore {
     runInAction(() => {
       this.wallet = null;
       this.address = null;
-      this.rootStore.buttonStore.setSwapButtonPlay('Connect Wallet');
+      this.rootStore.buttonStore.setSwapButton(
+        'Connect Wallet', 
+        true, 
+        'bg-button-100/30 text-text-200 hover:border-white hover:bg-button-100/70'
+      );
     });
   };
 

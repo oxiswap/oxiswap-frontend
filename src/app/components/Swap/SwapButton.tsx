@@ -9,12 +9,12 @@ const SwapButton: React.FC<Pick<ButtonProps, 'onAction'>> = observer(({ onAction
     return (
       <button
         onClick={onAction}
-        disabled={buttonStore.swapButtonDisabled}
+        disabled={buttonStore.swapButton.disabled}
         className={`
           border border-transparent text-base px-4 py-2 mt-2 rounded-2xl flex items-center justify-center transition-colors 
-          ${buttonStore.buttonClassName}
+          ${buttonStore.swapButton.className}
         `}>
-        <span>{buttonStore.swapButtonPlay}</span>
+        <span>{buttonStore.swapButton.text}</span>
       </button>
     );
   }

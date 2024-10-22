@@ -8,10 +8,10 @@ import Image from "next/image";
 import DrawAssetIcon from "@components/AssetIcon/DrawAssetIcon";
 
 const AddLiquidityAssetInput: React.FC<Pick<Asset, 'icon' | 'symbol' | 'assetId' | 'decimals'> & { assetIndex: number }> = observer(({ icon, symbol, assetId, decimals, assetIndex }) => {
-  const { balanceStore, accountStore, oracleStore, positionStore} = useStores();
+  const { balanceStore, accountStore, oracleStore, poolStore} = useStores();
   const currentBalance = balanceStore.getBalance(assetId, decimals);
 
-  const { handleInputChange } = useAddLiquidityInput(assetIndex); 
+  const { handleInputChange } = useAddLiquidityInput(assetIndex, true); 
   const debouncedHandleInputChange = useMemo(() => debounce(handleInputChange, 300), [handleInputChange]); 
 
 
@@ -23,7 +23,7 @@ const AddLiquidityAssetInput: React.FC<Pick<Asset, 'icon' | 'symbol' | 'assetId'
           autoComplete="off"
           autoCorrect="off"
           min={0}
-          value={positionStore.getAmount(assetIndex)}
+          value={poolStore.getAmount(assetIndex)}
           placeholder="0.00"
           onChange={(e) => {
             handleInputChange(e);
@@ -42,7 +42,9 @@ const AddLiquidityAssetInput: React.FC<Pick<Asset, 'icon' | 'symbol' | 'assetId'
       </div>
       <div className="flex justify-between mt-2">
 
-        <span className="text-xs text-text-500">$ {accountStore.isConnected ? oracleStore.getAssetPrices(assetIndex) : "0.00"}</span>
+        <span className="text-xs text-text-500">
+          $ {accountStore.isConnected ? oracleStore.getAssetPrices(assetIndex) : "0.00" }
+        </span>
         <div className="flex items-center">
           <span className="text-xs text-text-500 mr-2">{accountStore.isConnected ? currentBalance : "0"}</span>
           <Image src="/wallet.svg" alt="wallet" width={16} height={16} />

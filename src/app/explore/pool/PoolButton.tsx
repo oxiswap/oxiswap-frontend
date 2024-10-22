@@ -7,12 +7,12 @@ import DrawAssetIcon from "@components/AssetIcon/DrawAssetIcon";
 
 export const PoolButton: React.FC<Pick<PoolButtonProps, 'assets' | 'type' | 'tvl' | 'apr' | 'poolAssetId'>> = React.memo(({ assets, type, tvl, apr, poolAssetId }) => {
   const router = useRouter();
-  const { positionStore } = useStores();
+  const { poolStore } = useStores();
 
   const handleClick = useCallback(() => {
     router.push(`/explore/pool/${poolAssetId}`);
-    positionStore.setManageName("Add");
-  }, [router, positionStore, poolAssetId]);
+    poolStore.setManageName("Add");
+  }, [router, poolStore, poolAssetId]);
 
 
   return (

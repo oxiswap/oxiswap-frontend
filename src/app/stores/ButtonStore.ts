@@ -2,52 +2,32 @@ import { makeObservable, observable, action } from 'mobx';
 import RootStore from '@stores/RootStore';
 
 class ButtonStore {
-  @observable swapButtonPlay = 'Connect Wallet';
-  @observable swapButtonDisabled = false;
-  @observable positionButtonPlay = 'Select assets';
-  @observable positionButtonDisabled = true;
-  @observable buttonClassName = '';
-  @observable positionButtonClassName = '';
-  @observable positionButtonName = '';
+  @observable swapButton = {
+    text: 'Connect Wallet',
+    disabled: false,
+    className: ''
+  };
+  @observable positionButton = {
+    text: 'Select assets',
+    disabled: true,
+    className: '',
+  };
+
 
   constructor(private rootStore: RootStore) {
     makeObservable(this);
   }
 
   @action
-  setSwapButtonPlay(text: string) {
-    this.swapButtonPlay = text;
+  setSwapButton(text: string = 'Connect Wallet', disabled: boolean = false, className: string = '') {
+    this.swapButton = { text, disabled, className };
   }
 
   @action
-  setSwapButtonDisabled(disabled: boolean) {
-    this.swapButtonDisabled = disabled;
+  setPositionButton(text: string = 'Select assets', disabled: boolean = true, className: string = '') {
+    this.positionButton = { text, disabled, className };
   }
 
-  @action
-  setPositionButtonPlay(text: string) {
-    this.positionButtonPlay = text;
-  }
-
-  @action
-  setPositionButtonDisabled(disabled: boolean) {
-    this.positionButtonDisabled = disabled;
-  }
-
-  @action
-  setButtonClassName(className: string) {
-    this.buttonClassName = className;
-  }
-
-  @action
-  setPositionButtonClassName(className: string) {
-    this.positionButtonClassName = className;
-  }
-
-  @action
-  setPositionButtonName(name: string) {
-    this.positionButtonName = name;
-  }
 }
 
 export default ButtonStore;

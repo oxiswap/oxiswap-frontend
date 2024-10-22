@@ -19,11 +19,17 @@ const SwapCard: React.FC<Pick<SwapCardProps,'onAssetCardOpen' | 'onSwapClose' | 
 
   useEffect(() => {
     if (!isConnected) {
-      buttonStore.setSwapButtonPlay('Connect Wallet');
-      buttonStore.setSwapButtonDisabled(false);
-      buttonStore.setButtonClassName('bg-button-100/30 text-text-200 hover:border-white hover:bg-button-100/70');
+      buttonStore.setSwapButton(
+        'Connect Wallet', 
+        false, 
+        'bg-button-100/30 text-text-200 hover:border-white hover:bg-button-100/70'
+      );
     } else {
-      buttonStore.setButtonClassName('bg-oxi-bg-03 text-oxi-text-01');
+      buttonStore.setSwapButton(
+        'Swap', 
+        false, 
+        'bg-oxi-bg-03 text-oxi-text-01'
+      );
     }
   }, [isConnected]);
 

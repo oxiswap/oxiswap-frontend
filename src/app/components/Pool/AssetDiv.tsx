@@ -40,8 +40,8 @@ const AssetDiv = React.memo(({ assets }: Pick<PoolDetailProps, 'assets'>) => {
           const reservesResult: DryRunResult<FuelsBN[]> = await pairContract.getReserves(pair);
                     
           if (Array.isArray(reservesResult.value) && reservesResult.value.length >= 2) {
-            const formattedReserves = reservesResult.value.slice(0, 2).map((reserve: FuelsBN) => 
-              BN.formatUnits(reserve.toString()).toSignificant(4).toString()
+            const formattedReserves = reservesResult.value.slice(0, 2).map((reserve: FuelsBN, index: number) => 
+              BN.formatUnits(reserve.toString(), assets[index].decimals).toSignificant(4).toString()
             );
             setReserves(formattedReserves);
           } else {

@@ -53,13 +53,13 @@ const SwapConfirm: React.FC<Pick<SwapConfirmProps, 'onAction' | 'onSwap'>> = obs
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { swapStore, buttonStore, balanceStore } = useStores();
+  const { swapStore, buttonStore, balanceStore, oracleStore } = useStores();
 
   useEffect(() => {
     setIsVisible(true);
     swapStore.setFromLoading(true);
     swapStore.setToLoading(true);
-    buttonStore.setSwapButtonPlay('Confirm swap');
+    buttonStore.setSwapButton('Confirm swap');
     const timer = setTimeout(() => {
       setIsLoading(false);
       swapStore.setFromLoading(false);
@@ -70,7 +70,7 @@ const SwapConfirm: React.FC<Pick<SwapConfirmProps, 'onAction' | 'onSwap'>> = obs
   
   const handleClose = () => {
     setIsVisible(false);
-    buttonStore.setSwapButtonPlay('Swap');
+    buttonStore.setSwapButton('Swap');
     setTimeout(onAction, 300);
   };
 
@@ -114,7 +114,7 @@ const SwapConfirm: React.FC<Pick<SwapConfirmProps, 'onAction' | 'onSwap'>> = obs
               icon: `${swapStore.fromAsset.icon}`,
               balance: `${balanceStore.getBalance(swapStore.fromAsset.assetId, swapStore.fromAsset.decimals)}`,
               amount: `${swapStore.fromAmount}`,
-              value: `\$${swapStore.fromAssetPrice}`,
+              value: `\$${oracleStore.assetPrices[0]}`,
             }}
           />
         )}
@@ -132,7 +132,7 @@ const SwapConfirm: React.FC<Pick<SwapConfirmProps, 'onAction' | 'onSwap'>> = obs
               icon: `${swapStore.toAsset.icon}`,
               balance: `${balanceStore.getBalance(swapStore.toAsset.assetId, swapStore.toAsset.decimals)}`,
               amount: `${swapStore.toAmount}`,
-              value: `\$${swapStore.toAssetPrice}`,
+              value: `\$${oracleStore.assetPrices[1]}`,
             }}
           />
         )}

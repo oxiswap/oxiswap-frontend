@@ -18,8 +18,12 @@ class OracleStore {
     this.assetPrices[index] = price;
   }
 
+  resetAssetPrices() {
+    this.assetPrices = [];
+  }
+
   getAssetPrices(index: number) {
-    if (this.assetPrices[index] !== undefined) {
+    if (this.assetPrices[index] !== undefined && this.assetPrices[index] !== "NaN" && this.assetPrices[index] !== "") {
       return this.assetPrices[index];
     }
     return "0.00";

@@ -53,7 +53,7 @@ const AddLiquidityInputDiv: React.FC<PoolInfoProps> = observer(({ assets, onActi
   }, []);
 
   useEffect(() => {
-    positionStore.setAddLiquidityAssets(assets);
+    poolStore.setAddLiquidityAssets(assets);
   },[])
 
   const handleAmountsChange = (newAmounts: string[]) => {
@@ -62,18 +62,14 @@ const AddLiquidityInputDiv: React.FC<PoolInfoProps> = observer(({ assets, onActi
   };
 
   useEffect(() => {
-    if (positionStore.manageName === "Add") {
+    if (poolStore.manageName === "Add") {
       if (!accountStore.isConnected) {
-        buttonStore.setPositionButtonName("Connect Wallet");
-        buttonStore.setPositionButtonDisabled(false);
-        buttonStore.setPositionButtonClassName("bg-button-100/30 text-text-200 hover:border-white hover:bg-button-100/70");
+        buttonStore.setPositionButton("Connect Wallet", false, "bg-button-100/30 text-text-200 hover:border-white hover:bg-button-100/70");
         return;
       }
 
       positionStore.setIsPosition(false);
-      buttonStore.setPositionButtonName("Add Liquidity");
-      buttonStore.setPositionButtonDisabled(true);
-      buttonStore.setPositionButtonClassName("bg-oxi-bg-03 text-oxi-text-01");
+      buttonStore.setPositionButton("Add Liquidity", true, "bg-oxi-bg-03 text-oxi-text-01");
     }
   }, [accountStore.isConnected]);
 

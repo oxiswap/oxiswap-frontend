@@ -32,7 +32,8 @@ const PoolDetail: React.FC<Pick<PoolDetailProps, 'poolAssetId' | 'initialData'>>
   const [poolId, setPoolId] = useState(propPoolAssetId);
   const [liquidityCardOpen, setLiquidityCardOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { poolStore, positionStore, notificationStore } = useStores();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const { poolStore, notificationStore, buttonStore, oracleStore } = useStores();
   useEthPrice();
 
   useEffect(() => {
@@ -51,7 +52,7 @@ const PoolDetail: React.FC<Pick<PoolDetailProps, 'poolAssetId' | 'initialData'>>
   useEffect(() => {
     if (initialData) {
       poolStore.setPool(initialData);
-      positionStore.setManageName("Add");
+      poolStore.setManageName("Add");
       setIsLoading(false);
     } else {
       const fetchPoolData = async () => {
@@ -63,7 +64,7 @@ const PoolDetail: React.FC<Pick<PoolDetailProps, 'poolAssetId' | 'initialData'>>
           const poolData = await fetchPoolDetail(poolId);
           if (poolData) {
             poolStore.setPool(poolData);
-            positionStore.setManageName("Add");
+            poolStore.setManageName("Add");
           }
         } catch (error) {
           console.error('Error fetching pool ', error);
@@ -86,15 +87,29 @@ const PoolDetail: React.FC<Pick<PoolDetailProps, 'poolAssetId' | 'initialData'>>
   const handleRemoveLiquidity = () => setPathName("Remove");
   const handleOnClick = (name: string) => {
     setPathName(name);
-    positionStore.setManageName(name);
+    poolStore.setManageName(name);
   };
 
   const handlePositionConfirmClose = () => {
-    positionStore.setIsPreview(false);
-    if (notificationStore.notificationVisible) {
-      setTimeout(() => router.push('/pool'), 3000);
-    }
+    setConfirmOpen(false);
+    buttonStore.setPositionButton(
+      "Preview", 
+      true, 
+      "bg-oxi-bg-03 text-oxi-text-01"
+    );
+    poolStore.setInitialize();
+    oracleStore.setAssetPrices("", 0);
+    oracleStore.setAssetPrices("", 1);
   };
+
+  const handleAddLiquidityConfirm = () => {
+    buttonStore.setPositionButton(
+      "Confirm add liquidity", 
+      false, 
+      "bg-gradient-to-r from-blue-500 to-blue-700 text-white hover:from-blue-600 hover:to-blue-800 transition-all duration-300"
+    );
+    setConfirmOpen(true);
+  }
 
   const ManageButton = React.memo(({ buttonName, onButtonClick, isActive = false }: Pick<PoolDetailProps, 'buttonName' | 'onButtonClick' | 'isActive'>) => (
     <button
@@ -153,7 +168,7 @@ const PoolDetail: React.FC<Pick<PoolDetailProps, 'poolAssetId' | 'initialData'>>
                 <div className="border-t-2 border-gray-100 p-2 w-full mt-4"></div>
 
                 <Suspense fallback={<Skeleton active />}>
-                  {pathName === "Add" && <AddLiquidityInputDiv assets={poolStore.pool.assets} onAction={() => positionStore.setIsPreview(true)} />}
+                  {pathName === "Add" && <AddLiquidityInputDiv assets={poolStore.pool.assets} onAction={handleAddLiquidityConfirm} />}
                   {pathName === "Remove" && <RemoveLiquidityDiv pool={poolStore.pool} />}
                   {pathName === "Position" && (
                     <MyPosition 
@@ -206,14 +221,22 @@ const PoolDetail: React.FC<Pick<PoolDetailProps, 'poolAssetId' | 'initialData'>>
         </div>
       </div>
 
-      {positionStore.isPreview && (
-        <PopupModal isOpen={positionStore.isPreview} onClose={handlePositionConfirmClose}>
-          <PositionConfirm onAction={handlePositionConfirmClose} />
+      {confirmOpen && (
+        <PopupModal isOpen={confirmOpen} onClose={handlePositionConfirmClose}>
+          <PositionConfirm 
+            assets={poolStore.pool.assets}
+            amounts={poolStore.addLiquidityAmounts}
+            onAction={handlePositionConfirmClose} 
+            isExplore={true} 
+            poolAssetId={poolId}
+            poolType={poolStore.pool.type}
+            isPreview={true}
+          />
         </PopupModal>
       )} 
       <div className='relative z-50'>
         <div className='fixed right-0 top-32 w-72 h-auto flex flex-col'>
-          {(notificationStore.notificationStates['removeLiquidity'] || notificationStore.notificationStates['addLiquidity']) && (
+          {notificationStore.notifications.length > 0 && (
             <SwapNotification />
           )}
         </div>

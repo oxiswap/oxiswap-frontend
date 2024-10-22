@@ -23,8 +23,9 @@ export const SwapPageContent = observer(({ initialAssetConfig }: SwapPageContent
   const [isAssetCardOpen, setIsAssetCardOpen] = useState(false);
   const [isSwapCardOpen, setIsSwapCardOpen] = useState(false);
   const [isSetCardOpen, setIsSetCardOpen] = useState(false);
+  const [isPendingCardOpen, setIsPendingCardOpen] = useState(false);
   const [isFromAsset, setIsFromAsset] = useState(false);
-  const { swapStore, buttonStore } = useStores();
+  const { swapStore, buttonStore, notificationStore } = useStores();
 
   const { connect } = useWallet();
 
@@ -52,9 +53,11 @@ export const SwapPageContent = observer(({ initialAssetConfig }: SwapPageContent
 
   const handleSwapCardClose = () => {
     setIsSwapCardOpen(false);
-    buttonStore.setSwapButtonPlay('Swap');
-    buttonStore.setSwapButtonDisabled(false);
-    buttonStore.setButtonClassName('bg-gradient-to-r from-blue-500 to-blue-700 text-white hover:from-blue-600 hover:to-blue-800 transition-all duration-300');
+    buttonStore.setSwapButton(
+      'Swap', 
+      false, 
+      'bg-gradient-to-r from-blue-500 to-blue-700 text-white hover:from-blue-600 hover:to-blue-800 transition-all duration-300'
+    );
   };
 
   const handleSelectWalletCardOpen = () => {
@@ -70,11 +73,11 @@ export const SwapPageContent = observer(({ initialAssetConfig }: SwapPageContent
   };
 
   const handleSwapPendingOpen = () => {
-    swapStore.setIsPendingOpen(true);
+    setIsPendingCardOpen(true);
   };
 
   const handleSwapPendingClose = () => {
-    swapStore.setIsPendingOpen(false);
+    setIsPendingCardOpen(false);
     setIsSwapCardOpen(false);
     swapStore.setInitalize();
   };
@@ -109,12 +112,17 @@ export const SwapPageContent = observer(({ initialAssetConfig }: SwapPageContent
         <SwapSetting onAction={handleSetCardClose} />
       </PopupModal>
 
-      <PopupModal isOpen={swapStore.isPendingOpen} onClose={handleSwapPendingClose}>
+      <PopupModal isOpen={isPendingCardOpen} onClose={handleSwapPendingClose}>
         <SwapPending onAction={handleSwapPendingClose} />
       </PopupModal>
 
-      <SwapNotification />
-
+      <div className='relative z-50'>
+        <div className='fixed right-0 top-32 w-72 h-auto flex flex-col'>
+          {notificationStore.notifications.length > 0 && (
+            <SwapNotification />
+          )}
+        </div>
+      </div>
     </main>
   );
 });

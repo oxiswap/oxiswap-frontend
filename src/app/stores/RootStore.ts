@@ -30,7 +30,7 @@ class RootStore {
     this.balanceStore = new BalanceStore(this);
     this.swapStore = new SwapStore(this);
     this.buttonStore = new ButtonStore(this);
-    this.notificationStore = new NotificationStore(this);
+    this.notificationStore = new NotificationStore();
     this.settingStore = new SettingStore(this);
     this.poolStore = new PoolStore(this);
     this.oracleStore = new OracleStore();
