@@ -113,7 +113,7 @@ export const SwapPageContent = observer(({ initialAssetConfig }: SwapPageContent
       </PopupModal>
 
       <PopupModal isOpen={isPendingCardOpen} onClose={handleSwapPendingClose}>
-        <SwapPending onAction={handleSwapPendingClose} />
+        <SwapPending fromAmount={swapStore.fromAmount} toAmount={swapStore.toAmount} onAction={handleSwapPendingClose} />
       </PopupModal>
 
       <div className='relative z-50'>

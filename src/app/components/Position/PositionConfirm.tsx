@@ -81,7 +81,7 @@ const PositionConfirm: React.FC<PositionConfirmProps> = observer(({
       try {
         const result = await notificationStore.handleMultiStepTransactionNotification(
           addMessage,
-          router.addLiquidityMultiCall(assets, amounts, () => {}),
+          router.addLiquidityMultiCall(assets, amounts),
           () => {onAction()}
         );
         results = result;
@@ -90,7 +90,7 @@ const PositionConfirm: React.FC<PositionConfirmProps> = observer(({
         const newAmounts = [amounts[1], amounts[0]];
         const result = await notificationStore.handleMultiStepTransactionNotification(
           addMessage,
-          router.addLiquidityMultiCall(newAssets, newAmounts, () => {}),
+          router.addLiquidityMultiCall(newAssets, newAmounts),
           () => {onAction()}
         );
         results = result;

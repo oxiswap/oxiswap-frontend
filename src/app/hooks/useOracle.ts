@@ -66,6 +66,7 @@ function getPriceImpact(fromAssetIsAsset0: boolean, fromAmount: string, reserve0
   return { priceImpact, priceImpactValue };
 }
 
+
 const calculateAssetPrice = (amount: string, ethPrice: string, decimals: number, swapRate: number = 1): string => {
   return new BN(amount)
     .mul(new BN(ethPrice))
@@ -86,7 +87,7 @@ export const useOracle = (params: OracleParams) => {
     const newAmount1 = isAsset0First ? params.amount1 : params.amount0;
     const swapRate = isAsset0First ? reserves.value[1] / reserves.value[0] : reserves.value[0] / reserves.value[1];
 
-    const priceImpact = getPriceImpact(
+    const { priceImpact } = getPriceImpact(
       isAsset0First,
       params.amount0,
       reserves.value[0],

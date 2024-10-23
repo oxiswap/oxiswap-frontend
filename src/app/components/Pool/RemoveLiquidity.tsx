@@ -88,7 +88,7 @@ const RemoveLiquidityDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observ
     try {
       results = await notificationStore.handleMultiStepTransactionNotification(
         removeMessage,
-        routerContract.removeLiquidity(pool.poolAssetId, pool.assets, [poolStore.removeLiquidityAmounts], () => {}),
+        routerContract.removeLiquidity(pool.poolAssetId, pool.assets, [poolStore.removeLiquidityAmounts]),
         () => {}
       );
     } catch (error) {

@@ -7,6 +7,7 @@ import BN from "@utils/BN";
 import { Slider } from "@nextui-org/slider";
 import Image from "next/image";
 import SliderButton from "./RemoveSliderButton";
+import WalletIcon from '@assets/icons/WalletIcon';
 
 
 const RemoveSliderDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observer(({ pool }) => {
@@ -65,7 +66,7 @@ const RemoveSliderDiv: React.FC<Pick<RemoveLiquidityProps, 'pool' >> = observer(
         <span className="text-xs text-[#8f9ba7]">~${oracleStore.getAssetPrices(0)}</span>
         <div className="flex items-center">
           <span className="text-xs text-[#8f9ba7] mr-2">{exactBalance}</span>
-          <Image src="/wallet.svg" alt="wallet" width={16} height={16} />
+          <WalletIcon width={16} height={16} className="text-text-100" />
         </div>
       </div>
       <div className="mt-6">

@@ -5,12 +5,13 @@ export const ETH_ASSET_ID = '0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef45
 export const FUEL_PROVIDER_URL = 'https://mainnet.fuel.network/v1/graphql';
 
 export const defaultETH: Asset = {
-  name: 'Ether',
+  name: 'Ethereum',
   icon: 'https://images.oxiswap.com/assets/eth.png',
   symbol: 'ETH',
   assetId: '0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07',
   balance: '0 ETH',
   value: '$0',
+  decimals: 9,
   amount: '0',
 };
 
@@ -48,6 +49,8 @@ export interface ButtonProps {
   onAction: () => void;
   buttonName: string;
   src: string;
+  fromAmount: string;
+  toAmount: string;
   alt: string;
   className: string;
   children: React.ReactNode;

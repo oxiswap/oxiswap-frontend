@@ -18,7 +18,6 @@ import RightIcon from '@assets/icons/rightIcon';
 import { useEthPrice } from '@hooks/useEthPrice';
 import { fetchPoolDetail } from "@utils/api";
 
-
 const AddLiquidityInputDiv = lazy(() => import("@components/Pool/AddLiquidity"));
 const RemoveLiquidityDiv = lazy(() => import("@components/Pool/RemoveLiquidity"));
 const MyPosition = lazy(() => import("@components/Pool/MyPosition"));
@@ -53,6 +52,8 @@ const PoolDetail: React.FC<Pick<PoolDetailProps, 'poolAssetId' | 'initialData'>>
     if (initialData) {
       poolStore.setPool(initialData);
       poolStore.setManageName("Add");
+      const fees = initialData.volume.replace(/[^0-9.-]+/g, '') * 0.003;
+      poolStore.setStatistics(initialData.tvl, initialData.apr, fees.toString(), initialData.volume, initialData.tvl);
       setIsLoading(false);
     } else {
       const fetchPoolData = async () => {
@@ -65,6 +66,8 @@ const PoolDetail: React.FC<Pick<PoolDetailProps, 'poolAssetId' | 'initialData'>>
           if (poolData) {
             poolStore.setPool(poolData);
             poolStore.setManageName("Add");
+            const fees = parseFloat(poolData.volume.replace(/[^0-9.-]+/g, '')) * 0.003;
+            poolStore.setStatistics(poolData.tvl, poolData.apr, fees.toString(), poolData.volume, poolData.tvl);
           }
         } catch (error) {
           console.error('Error fetching pool ', error);
@@ -75,7 +78,6 @@ const PoolDetail: React.FC<Pick<PoolDetailProps, 'poolAssetId' | 'initialData'>>
       fetchPoolData();
     }
   }, [poolId, initialData]);
-
 
   useEffect(() => {
     setTimeout(() => {

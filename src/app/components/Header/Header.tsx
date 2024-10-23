@@ -11,6 +11,7 @@ import { useWallet } from '@hooks/useWallet';
 import LogoDropMenu from './LogoDropMenu';
 import { useRouter } from 'next/navigation';
 import AbstractIcon from '@components/Header/CreateAbstractIcon';
+import WalletIcon from '@assets/icons/WalletIcon';
 
 const Header: React.FC<HeaderProps> = observer(({ onDisconnected }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -75,7 +76,7 @@ const Header: React.FC<HeaderProps> = observer(({ onDisconnected }) => {
         </div>
 
         <div className='flex items-center space-x-2 md:space-x-4'>
-          {!isMobile && (
+          {!isMobile && accountStore.isConnected && (
             <button className='bg-gradient-to-r from-blue-500 to-blue-700 hover:border-white border border-transparent text-xs text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors'>
               <Image src="/fuel-icon.svg" alt='network' width={16} height={16}/>
               <span>Fuel Mainnet</span>
@@ -115,7 +116,7 @@ const Header: React.FC<HeaderProps> = observer(({ onDisconnected }) => {
                 onClick={connect}
                 className='bg-button-100/30 hover:bg-button-100/50 text-xs text-text-200 px-4 py-2 rounded-md flex items-center space-x-2 transition-colors'
               >
-                <Image src="/fuel-icon.svg" alt='wallet' width={16} height={16}/>
+                <WalletIcon width={16} height={16}/>
                 <span>Connect Wallet</span>
               </button>
             )
@@ -168,7 +169,7 @@ const Header: React.FC<HeaderProps> = observer(({ onDisconnected }) => {
                 onClick={connect}
                 className='bg-button-100/30 hover:bg-button-100/50 text-sm text-text-200 px-4 py-2 rounded-md flex items-center space-x-2 transition-colors'
               >
-                <Image src="/fuel-icon.svg" alt='wallet' width={16} height={16}/>
+                <WalletIcon width={16} height={16}/>
                 <span>Connect Wallet</span>
               </button>
             )}
