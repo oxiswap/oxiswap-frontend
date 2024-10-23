@@ -5,7 +5,7 @@ class ButtonStore {
   @observable swapButton = {
     text: 'Connect Wallet',
     disabled: false,
-    className: ''
+    className: 'bg-button-100/30 text-text-200 hover:border-white hover:bg-button-100/70'
   };
   @observable positionButton = {
     text: 'Select assets',

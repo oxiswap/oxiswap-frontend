@@ -1,8 +1,7 @@
 import { supabase, signInWithPassword } from '@utils/supabaseClient';
 import assetConfig from '@src/app/test-config.json';
-import { PoolButtonProps, Asset, FUEL_PROVIDER_URL } from './interface';
+import { PoolButtonProps, Asset, FUEL_PROVIDER_URL, AssetConfig, ETH_ASSET_ID } from './interface';
 import BN from "@utils/BN";
-import { AssetConfig, ETH_ASSET_ID } from "@utils/interface";
 import { CryptoPair } from '@blockchain/CryptoPair';
 import { Provider } from 'fuels';
 import { sortAsset } from '@utils/helpers';
@@ -180,31 +179,71 @@ const transformAssets = (data: any[]): AssetConfig  => {
 };
 
 async function getEthPrice() {
-  const response = await axios.get(
-    `https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true&include_last_updated_at=true`,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    }
-  );
-
-  return response.data.ethereum.usd;
+  const response = await axios.get('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
+  return response.data.price;
 }
 
-async function getAssetPriceAndTVl(one: string, two: string) {
-  const assetPriceInEth = parseFloat(one) / parseFloat(two);
-  // eth price
-  const ethPriceInUsd =await getEthPrice();
-  const assetPriceInUsd = assetPriceInEth * ethPriceInUsd; 
-  const tvl = (parseFloat(one) * ethPriceInUsd) + (parseFloat(two) * assetPriceInUsd);
-  // const dailyFees = 1000;
-  // const annualFees = dailyFees * 365;
-  // const apr = (annualFees / tvl) * 100;
-  const apr = 0;
 
-  return {tvl, apr, assetPriceInUsd};
+async function fetchTxData(poolAssetId: string) {
+  try {
+    const currentDate = new Date(); 
+    const previousDay = new Date(currentDate);
+    previousDay.setDate(previousDay.getDate() - 1);
+    const startOfPreviousDay = new Date(previousDay.setHours(0, 0, 0, 0)); 
+    const endOfPreviousDay = new Date(previousDay.setHours(23, 59, 59, 999)); 
+    const { data, error } = await supabase
+      .from('oxiswap_transaction_info')
+      .select()
+      .eq('pool_assetId', poolAssetId)
+      .gte('created_at', startOfPreviousDay.toISOString()) 
+      .lte('created_at', endOfPreviousDay.toISOString()); 
+
+    if (error) {
+      throw error;
+    }
+    if (!data) {
+      return [];
+    }
+    return data;
+  } catch (error) {
+      console.error('Error fetching txs:', error);
+  }
+}
+
+function calculateDaysSinceCreatedAt(createdAt: string) {
+const createdDate = new Date(createdAt);
+const currentDate = new Date();
+const timeDifference = Math.abs(currentDate.getTime() - createdDate.getTime());
+const millisecondsInADay = 1000 * 60 * 60 * 24;
+const daysDifference = Math.floor(timeDifference / millisecondsInADay);
+return daysDifference;
+}
+
+async function getAssetPrice(one: string, two: string, ethPriceInUsd: number) {
+  const assetPriceInEth = parseFloat(one) / parseFloat(two);
+  const assetPriceInUsd = assetPriceInEth * ethPriceInUsd; 
+  return assetPriceInUsd;
+}
+
+async function getAssetPriceAndTVl(one: string, two: string, poolAssetId: string, createdAt: string, ethPriceInUsd: number) {
+  const assetPriceInUsd = await getAssetPrice(one, two, ethPriceInUsd); 
+  const tvl = (parseFloat(one) * ethPriceInUsd) + (parseFloat(two) * assetPriceInUsd);
+  let apr: number = 0;
+  let volume: number = 0;
+
+  let holdingDays = calculateDaysSinceCreatedAt(createdAt);
+  const txData =await fetchTxData(poolAssetId);
+  if (Array.isArray(txData) && txData.length > 0) {
+    txData.map( tx => {
+      if (tx.from_asset_id === ETH_ASSET_ID && tx.from_amount ) {
+        volume += parseFloat(tx.from_amount) * 2 * ethPriceInUsd;
+      } else if (tx.to_asset_id === ETH_ASSET_ID && tx.to_amount ) {
+        volume += parseFloat(tx.to_amount) * 2 * ethPriceInUsd;
+      }
+    })
+    apr = (volume * 0.003) / tvl * (365 / holdingDays) * 100;
+  }
+  return {tvl, apr, volume};
 }
 
 async function getAssetsReserves(poolAssetId: string, asset0: string, asset1: string, decimals0: number, decimals1: number) {
@@ -226,41 +265,41 @@ async function getAssetsReserves(poolAssetId: string, asset0: string, asset1: st
   return {asset0num, asset1num};
 }
 
-async function calculateTVLAndAPR(insertData: any, decimals0: number, decimals1: number) {
+async function calculateTVLAndAPR(pool: any, decimals0: number, decimals1: number) {
+  const ethPriceInUsd =await getEthPrice();
   // set tvl and apr
   let tvl: number = 0;
   let apr: number = 0;
-  if (insertData.asset_0 === ETH_ASSET_ID) {
-   const result = await getAssetPriceAndTVl(insertData.asset_0_num, insertData.asset_1_num);
+  let volume: number = 0;
+
+  if (pool.asset_0 === ETH_ASSET_ID) {
+   const result = await getAssetPriceAndTVl(pool.asset_1_num, pool.asset_0_num, pool.pool_assetId, pool.created_at, ethPriceInUsd);
    tvl = result.tvl;
    apr = result.apr;
-  } else if (insertData.asset_1 === ETH_ASSET_ID) {
-   const result = await getAssetPriceAndTVl(insertData.asset_1_num, insertData.asset_0_num);
+   volume = result.volume;
+  } else if (pool.asset_1 === ETH_ASSET_ID) {
+   const result = await getAssetPriceAndTVl(pool.asset_1_num, pool.asset_0_num, pool.pool_assetId, pool.created_at, ethPriceInUsd);
    tvl = result.tvl;
    apr = result.apr;
+   volume = result.volume;
   } else {
     let asset0Price: number = 0;
     let asset1Price: number = 0;
     const provider = await Provider.create(FUEL_PROVIDER_URL);
     const factory = new CryptoFactory(provider);
-    const asset0Rs = await factory.getPair(insertData.asset_0, ETH_ASSET_ID);
-    const asset1Rs = await factory.getPair(insertData.asset_1, ETH_ASSET_ID);
+    const asset0Rs = await factory.getPair(pool.asset_0, ETH_ASSET_ID);
+    const asset1Rs = await factory.getPair(pool.asset_1, ETH_ASSET_ID);
     if (asset0Rs.isPair) {
-      const reserves = await getAssetsReserves(asset0Rs.pair, insertData.asset_0, ETH_ASSET_ID, decimals0, decimals1);
-      const result = await getAssetPriceAndTVl(reserves.asset1num, reserves.asset0num);
-      asset0Price = result.assetPriceInUsd;
+      const reserves = await getAssetsReserves(asset0Rs.pair, pool.asset_0, ETH_ASSET_ID, decimals0, decimals1);
+      asset0Price = await getAssetPrice(reserves.asset1num, reserves.asset0num, ethPriceInUsd);
     }
     if (asset1Rs.isPair) {
-      const reserves = await getAssetsReserves(asset1Rs.pair, insertData.asset_1, ETH_ASSET_ID, decimals0, decimals1);
-      const result = await getAssetPriceAndTVl(reserves.asset1num, reserves.asset0num);
-      asset1Price = result.assetPriceInUsd;
+      const reserves = await getAssetsReserves(asset1Rs.pair, pool.asset_1, ETH_ASSET_ID, decimals0, decimals1);
+      asset1Price = await getAssetPrice(reserves.asset1num, reserves.asset0num, ethPriceInUsd);
     }
-    tvl = (parseFloat(insertData.asset_0_num) * asset0Price) + (parseFloat(insertData.asset_1_num) * asset1Price);
-    // const dailyFees = 1000;
-    // const annualFees = dailyFees * 365;
-    // apr = (annualFees / tvl) * 100;
+    tvl = (parseFloat(pool.asset_0_num) * asset0Price) + (parseFloat(pool.asset_1_num) * asset1Price);
   }
-  return {tvl, apr};
+  return {tvl, apr, volume};
 }
 
 
@@ -392,13 +431,14 @@ export async function updatePoolTvlAndApr(pair: string) {
 
   if (existingData && existingData.length > 0) {
     const resulet = await getAssetsReserves(pair, existingData[0].asset_0, existingData[0].asset_1, existingData[0].asset_0_decimals, existingData[0].asset_1_decimals);
-    const {tvl, apr} = await calculateTVLAndAPR(existingData[0], existingData[0].asset_0_decimals, existingData[0].asset__decimals);
+    const {tvl, apr, volume} = await calculateTVLAndAPR(existingData[0], existingData[0].asset_0_decimals, existingData[0].asset__decimals);
     
     existingData[0].asset_0_num = resulet.asset0num;
     existingData[0].asset_1_num = resulet.asset1num;
     const updatedData = {
       ...existingData[0],
       tvl: `$${tvl.toFixed(2)}`,
+      volume: `$${volume.toFixed(2)}`,
       apr: `${apr.toFixed(2)}%`,
       updated_at: new Date().toISOString()
     }
@@ -434,4 +474,12 @@ export async function addAsset(asset: Asset) {
     .from('fuel_verfied_assets')
     .insert(asset)
   }
+}
+
+export async function addTransactionInfo(insertData: any) {
+  // sign supabase with password
+  await signInWithPassword();
+  await supabase
+    .from('oxiswap_transaction_info')
+    .insert(insertData)
 }

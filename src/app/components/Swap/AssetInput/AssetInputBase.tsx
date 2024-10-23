@@ -65,7 +65,7 @@ export const AssetInputBase: React.FC<AssetInputBaseProps> = ({
       {loading ? (
         <SkeletonLoader />
       ) : (
-        <AssetInfo price={price} balance={balance} priceImpact={priceImpact} />
+        <AssetInfo price={price} balance={balance} priceImpact={priceImpact} toAmount={isFrom ? "" : amount} />
       )}
     </div>
   </div>

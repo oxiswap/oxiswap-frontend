@@ -19,7 +19,6 @@ const SelectAsset: React.FC<SelectAssetProps> = observer(({ onAction, assets, po
   const isMobile = useResponsive();
   useEthPrice();
   const observerRef = useRef<HTMLDivElement | null>(null);
-
   const sortedAssets = useMemo(() => {
     return [...assets]
       .filter(asset => asset.name.toString() !== "unknown")

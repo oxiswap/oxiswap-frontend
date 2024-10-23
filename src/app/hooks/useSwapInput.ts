@@ -102,6 +102,7 @@ export const useSwapInput = (isFromInput: boolean) => {
             : await router.getAmountsIn(currentAmount, swapStore.fromAsset.assetId, swapStore.toAsset.assetId, swapStore.fromAsset.decimals, swapStore.toAsset.decimals);
           const newAmount = amounts.replace(/,/g, '');
 
+          swapStore.setPoolAssetId(pair);
           if (isFromInput) {
             if (swapStore.fromAmount === '') {
               swapStore.setInitalize();

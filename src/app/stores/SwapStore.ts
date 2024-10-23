@@ -22,6 +22,7 @@ class SwapStore {
   @observable isPendingOpen: boolean = false;
   @observable popularAssets: string[] = [];
   @observable searchLoading: boolean = true;
+  @observable poolAssetId: string = '';
 
   constructor(private rootStore: RootStore) {
     makeObservable(this);
@@ -145,6 +146,11 @@ class SwapStore {
   @action
   setSearchLoading(loading: boolean) {
     this.searchLoading = loading;
+  }
+
+  @action
+  setPoolAssetId(poolAssetId: string) {
+    this.poolAssetId = poolAssetId;
   }
 }
 

@@ -45,7 +45,6 @@ export class CryptoRouter {
     fromDecimals: number | undefined,
     toAmount: string,
     toDecimals: number | undefined,
-    onSubmitted?: () => void
   ) {
     if (!fromAsset || !toAsset || fromAmount === '0' || fromAmount === '0.00') {
       throw new Error('invalid input');
@@ -72,10 +71,6 @@ export class CryptoRouter {
           forward: [formatedAmountIn, fromAsset],
         })
         .call();
-
-      if (onSubmitted) {
-        onSubmitted();
-      }
 
       const { transactionResult } = await waitForResult();
 
@@ -105,7 +100,6 @@ export class CryptoRouter {
     fromDecimals: number | undefined,
     toAmount: string,
     toDecimals: number | undefined,
-    onSubmitted?: () => void
   ) {
     if (!fromAsset || !toAsset || fromAmount === '0' || fromAmount === '0.00') {
       throw new Error('invalid input');
@@ -134,10 +128,6 @@ export class CryptoRouter {
           forward: [formatedAmountInMax, fromAsset],
         })
         .call();
-
-      if (onSubmitted) {
-        onSubmitted();
-      }
 
       const { transactionResult } = await waitForResult();
 
@@ -197,7 +187,7 @@ export class CryptoRouter {
     }
   }
 
-  async addLiquidity(assets: Asset[], amounts: string[], onSubmitted?: () => void) {
+  async addLiquidity(assets: Asset[], amounts: string[]) {
     const account = { bits: this.wallet.address.toB256() };
     const to = { Address: account };    
     const pair = new CryptoPair(this.wallet);
@@ -233,10 +223,6 @@ export class CryptoRouter {
         .addContracts([pair.instance, factory.instance])
         .call();
 
-      if (onSubmitted) {
-        onSubmitted();
-      }
-
       const { transactionResult } = await waitForResult();
 
       return {
@@ -257,7 +243,7 @@ export class CryptoRouter {
     }
   }
 
-  async addLiquidityMultiCall(assets: Asset[], amounts: string[], onSubmitted?: () => void) {
+  async addLiquidityMultiCall(assets: Asset[], amounts: string[]) {
     const pair = new CryptoPair(this.wallet);
     const factory = new CryptoFactory(this.wallet);
     const account = { bits: this.wallet.address.toB256() };
@@ -298,10 +284,6 @@ export class CryptoRouter {
           .addContracts([pair.instance, factory.instance]),
         ])
         .call();
-
-      if (onSubmitted) {
-        onSubmitted();
-      }
 
       const { value: results } = await waitForResult();
 
@@ -371,7 +353,7 @@ export class CryptoRouter {
     return value;
   }
 
-  async removeLiquidity(poolAssetId: string, assets: Asset[], amounts: string[], onSubmitted?: () => void ) {
+  async removeLiquidity(poolAssetId: string, assets: Asset[], amounts: string[]) {
     const account = { bits: this.wallet.address.toB256() };
     const to = { Address: account };  
 
@@ -407,10 +389,6 @@ export class CryptoRouter {
           forward: [formatedLiquidity, poolAssetId],
         })
         .call();
-
-      if (onSubmitted) {
-        onSubmitted();
-      }
 
       const { transactionResult } = await waitForResult();
 

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { PoolDetailProps } from "@utils/interface";
+import { PoolDetailProps, FUEL_PROVIDER_URL } from "@utils/interface";
 import { CryptoFactory } from '@blockchain/CryptoFactory';
 import { CryptoPair } from '@blockchain/CryptoPair';
 import { useStores } from '@stores/useStores';
-import { Account, BN as FuelsBN } from 'fuels';
+import { Account, BN as FuelsBN, Provider } from 'fuels';
 import { sortAsset } from "@utils/helpers";
 import BN from "@utils/BN";
 import DrawAssetIcon from "@components/AssetIcon/DrawAssetIcon";
@@ -16,9 +16,19 @@ interface DryRunResult<T> {
 const AssetDiv = React.memo(({ assets }: Pick<PoolDetailProps, 'assets'>) => {
   const assetLength = assets.length;
   const [reserves, setReserves] = useState<string[]>(Array(assetLength).fill("0"));
+  const [provider, setProvider] = useState<Provider | null>(null);
   const { accountStore } = useStores();
-  const factory = new CryptoFactory(accountStore.getWallet as Account);
-  const pairContract = new CryptoPair(accountStore.getWallet as Account);
+
+  useEffect(() => {
+    const initProvider = async () => {
+      const newProvider = await Provider.create(FUEL_PROVIDER_URL);
+      setProvider(newProvider);
+    };
+    initProvider();
+  }, []);
+  
+  const factory = new CryptoFactory(provider as Provider);
+  const pairContract = new CryptoPair(provider as Provider);
 
   const sortedAssets = useMemo(() => {
     if (assetLength === 2) {

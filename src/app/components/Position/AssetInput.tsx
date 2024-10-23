@@ -9,6 +9,7 @@ import { debounce } from 'lodash';
 import { useAddLiquidityInput } from '@hooks/useAddLiquidityInput';
 import { Skeleton } from 'antd';
 import DrawAssetIcon from '@components/AssetIcon/DrawAssetIcon';
+import WalletIcon from '@assets/icons/WalletIcon';
 
 const AssetInput: React.FC<Pick<Asset, 'symbol' | 'icon' | 'assetId' | 'decimals'>  & { assetIndex: number}> = observer(({ symbol, icon, assetId, decimals, assetIndex}) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -68,7 +69,7 @@ const AssetInput: React.FC<Pick<Asset, 'symbol' | 'icon' | 'assetId' | 'decimals
           <span className="text-sm text-[#8f9ba7] mr-2">
             {accountStore.isConnected ? currentBalance : '0'}
           </span>
-          <Image src="/wallet.svg" alt="wallet" width={16} height={16} />
+          <WalletIcon width={16} height={16} className="text-text-100" />
         </div>
       </div>
     </div>

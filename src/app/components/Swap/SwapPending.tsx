@@ -4,9 +4,9 @@ import { Account } from 'fuels';
 import { ButtonProps } from '@utils/interface';
 import { useStores } from '@stores/useStores';
 import { CryptoRouter } from '@blockchain/CryptoRouter';
-import { supabase, signInWithPassword } from '@utils/supabaseClient';
+import { addTransactionInfo } from '@utils/api';
 
-const SwapPending: React.FC<Pick<ButtonProps, 'onAction'>> = ({ onAction }) => {
+const SwapPending: React.FC<Pick<ButtonProps,'fromAmount' | 'toAmount' |'onAction'>> = ({ fromAmount, toAmount, onAction }) => {
   const { accountStore, swapStore, notificationStore, settingStore } = useStores();
 
   const router = new CryptoRouter(accountStore.getWallet as Account);
@@ -16,7 +16,7 @@ const SwapPending: React.FC<Pick<ButtonProps, 'onAction'>> = ({ onAction }) => {
     const swap = async () => {
       try {
         let result;
-
+      
         if (swapStore.swapType === 0) {
           result = await notificationStore.handleMultiStepTransactionNotification(
             swapMessage,
@@ -24,11 +24,10 @@ const SwapPending: React.FC<Pick<ButtonProps, 'onAction'>> = ({ onAction }) => {
               swapStore.fromAsset.assetId,
               swapStore.toAsset.assetId,
               Number(settingStore.slippage) / 100,
-              swapStore.fromAmount,
+              fromAmount,
               swapStore.fromAsset.decimals,
-              swapStore.toAmount,
+              toAmount,
               swapStore.toAsset.decimals,
-              () => {}
             ),
             () => {onAction()}
           );
@@ -40,11 +39,10 @@ const SwapPending: React.FC<Pick<ButtonProps, 'onAction'>> = ({ onAction }) => {
               swapStore.fromAsset.assetId,
               swapStore.toAsset.assetId,
               Number(settingStore.slippage) / 100,
-              swapStore.fromAmount,
+              fromAmount,
               swapStore.fromAsset.decimals,
-              swapStore.toAmount,
+              toAmount,
               swapStore.toAsset.decimals,
-              () => {}
             ),
             () => {onAction()}
           );
@@ -56,18 +54,15 @@ const SwapPending: React.FC<Pick<ButtonProps, 'onAction'>> = ({ onAction }) => {
             address: accountStore.address,
             from_asset_id: swapStore.fromAsset.assetId,
             from_name: swapStore.fromAsset.name,
-            from_amount: swapStore.fromAmount,
+            from_amount: fromAmount,
             to_asset_id: swapStore.toAsset.assetId,
             to_name: swapStore.toAsset.name,
-            to_amount: swapStore.toAmount,
-            slippage: settingStore.slippage
+            to_amount: toAmount,
+            slippage: settingStore.slippage,
+            pool_assetId: swapStore.poolAssetId
           }
 
-          // login supabase
-          await signInWithPassword();
-          await supabase
-              .from('oxiswap_transaction_info')
-              .insert(insertData)
+          await addTransactionInfo(insertData);
 
         } else {
           swapStore.setIsPendingOpen(false);
