@@ -25,16 +25,9 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'OxiSwap - Decentralized Exchange',
     description: 'Lightning-Fast Decentralized Exchange Built On The Fuel Network',
-    images: [
-      {
-        url: 'https://images.oxiswap.com/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'OxiSwap - Lightning-Fast DEX powered by Fuel',
-      },
-    ],
+    images: "https://images.oxiswap.com/preview.png",
     type: 'website',
-    url: 'https://www.oxiswap.com'
+    url: 'https://app.oxiswap.com'
   },
   twitter: {
     card: 'summary_large_image',
@@ -44,21 +37,14 @@ export const metadata: Metadata = {
     creatorId: '1656320604432367617',
     title: 'OxiSwap - Lightning-Fast DEX powered by Fuel',
     description: 'Trade, earn, and build on Fuel\'s most oxidized experience',
-    images: [
-      {
-        url: 'https://images.oxiswap.com/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'OxiSwap - Lightning-Fast DEX powered by Fuel',
-      },
-    ],
+    images: "https://images.oxiswap.com/preview.png",
   },
   icons: {
     icon: 'https://images.oxiswap.com/favicon.ico',
     apple: 'https://images.oxiswap.com/apple-touch-icon.png',
   },
   manifest: '/site.webmanifest',
-  metadataBase: new URL('https://oxiswap.com'),
+  metadataBase: new URL('https://app.oxiswap.com'),
 };
 
 export default function RootLayout({

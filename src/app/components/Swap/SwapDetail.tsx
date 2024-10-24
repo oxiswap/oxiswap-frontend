@@ -41,7 +41,7 @@ const SwapDetail: React.FC<Pick<SwapDetailProps, 'isExpanded' | 'setIsExpanded'>
               <>
                 <span className="text-black">1 {swapStore.fromAsset.symbol}</span>
                 <span className="text-[#8f9ba7] mx-1">=</span>
-                <span className="text-black">{swapStore.swapRate} {swapStore.toAsset.symbol}</span>
+                <span className="text-black">{swapStore.swapRate !== "NaN" ? swapStore.swapRate : '0'} {swapStore.toAsset.symbol}</span>
                 <span className="text-[#8f9ba7] mx-1">(~${swapStore.swapRateValue})</span>
               </>
             ) : (
