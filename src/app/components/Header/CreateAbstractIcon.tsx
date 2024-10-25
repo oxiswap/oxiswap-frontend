@@ -11,7 +11,13 @@ const AbstractIcon: React.FC<AbstractIconProps> = ({ address, size = 80 }) => {
     const hash = sha256(address);
     const colors = [
       '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', 
-      '#98D8C8', '#F06292', '#AED581', '#FFD54F'
+      '#98D8C8', '#F06292', '#AED581', '#FFD54F',
+      '#FF99C8', '#FCF6BD', '#D0F4DE', '#A9DEF9',
+      '#E4C1F9', '#FF8FA3', '#B1E693', '#FB9F89',
+      '#FF00FF', '#00FF00', '#00FFFF', '#FF0099',
+      '#FF0066', '#00FF99', '#00FFCC', '#CC00FF',
+      '#582F0E', '#7F4F24', '#936639', '#A68A64',
+      '#B6AD90', '#C2C5AA', '#A4AC86', '#656D4A'
     ];
 
     const elementSize = size / 4;

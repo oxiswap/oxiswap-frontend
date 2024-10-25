@@ -70,7 +70,7 @@ export const useSwapInput = (isFromInput: boolean) => {
     const updateOracleData = async () => {
       const isZeroAddress = swapStore.fromAsset.assetId === ZERO_ADDRESS || swapStore.toAsset.assetId === ZERO_ADDRESS;
 
-      if (!isZeroAddress && swapStore.fromAmount !== '0' && swapStore.toAmount !== '0') {
+      if (!isZeroAddress && swapStore.fromAmount !== '0' && swapStore.toAmount !== '0' && isPair) {
         const { swapRate, priceImpact, assetPrices, rateValue } = await oracleUpdate();
         swapStore.setSwapRate(swapRate);
         swapStore.setPriceImpact(priceImpact);
@@ -85,7 +85,7 @@ export const useSwapInput = (isFromInput: boolean) => {
       }
     };
     
-    if (!isZeroAddress) {
+    if (!isZeroAddress && isPair) {
       updateOracleData();
     }
   }, [swapStore.fromAmount, swapStore.toAmount, isZeroAddress, oracleUpdate]);
@@ -168,19 +168,17 @@ export const useSwapInput = (isFromInput: boolean) => {
       newAmount = newAmount.replace(/^0+(?=\d)/, '');
     }
     
-
     if (isFromInput) {
       swapStore.setFromAmount(newAmount);
       swapStore.setSwapType(0);
 
-      if (swapStore.fromAsset.assetId !== ZERO_ADDRESS && swapStore.toAsset.assetId !== ZERO_ADDRESS) {
+      if (swapStore.fromAsset.assetId !== ZERO_ADDRESS && swapStore.toAsset.assetId !== ZERO_ADDRESS && isPair) {
         swapStore.setToLoading(true);
       }
-
     } else {
       swapStore.setToAmount(newAmount);
       swapStore.setSwapType(1);
-      if (swapStore.fromAsset.assetId !== ZERO_ADDRESS && swapStore.toAsset.assetId !== ZERO_ADDRESS) {
+      if (swapStore.fromAsset.assetId !== ZERO_ADDRESS && swapStore.toAsset.assetId !== ZERO_ADDRESS && isPair) {
         swapStore.setFromLoading(true);
       }
     }
@@ -188,7 +186,9 @@ export const useSwapInput = (isFromInput: boolean) => {
     if (newAmount.length === 0) {
       swapStore.setInitalize();
     } else if (newAmount.length > 0 && new BN(newAmount).gt(BN.ZERO)) {
-      isFromInput ? swapStore.setToLoading(true) : swapStore.setFromLoading(true);
+      if (isPair) {
+        isFromInput ? swapStore.setToLoading(true) : swapStore.setFromLoading(true);
+      }
       setInputValue(newAmount);
     }
     

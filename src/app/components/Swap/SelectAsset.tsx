@@ -151,7 +151,7 @@ const SelectAsset: React.FC<SelectAssetProps> = observer(({ onAction, assets, po
                 </div>
               </div>
               <div className="text-right">
-                <div>{balanceStore.getBalance(asset.assetId, asset.decimals)}</div>
+                <div>{balanceStore.getBalance(asset.assetId, asset.decimals) === "0" ? "" : balanceStore.getBalance(asset.assetId, asset.decimals)}</div>
               </div>
             </div>
           ))}

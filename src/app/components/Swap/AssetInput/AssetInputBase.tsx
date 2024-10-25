@@ -55,7 +55,7 @@ export const AssetInputBase: React.FC<AssetInputBaseProps> = ({
       <button
         onClick={onAssetCardOpen}
         className={`flex items-center justify-between px-2 py-1 rounded-xl shadow-md whitespace-nowrap ${
-          asset.symbol ? 'bg-oxi-bg-02 text-black' : 'bg-button-100 text-white'
+          asset.symbol ? 'bg-oxi-bg-02 text-black hover:shadow-lg hover:bg-oxi-bg-03' : 'bg-button-100 text-white hover:shadow-lg hover:bg-button-100/90'
         }`}
       >
         <AssetSelector asset={asset} />

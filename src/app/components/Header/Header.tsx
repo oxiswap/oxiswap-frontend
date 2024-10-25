@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HeaderProps } from '@utils/interface';
 import useResponsive from '@hooks/useResponsive';
@@ -59,6 +60,21 @@ const Header: React.FC<HeaderProps> = observer(({ onDisconnected }) => {
         >
           <span>Pool</span>
         </button>
+        <Link href="https://app.fuel.network/bridge?from=eth&to=fuel&auto_close=true&=true" target="_blank" rel="noopener noreferrer" className="hover:text-black text-text-300">
+          <span>Bridge</span>
+        </Link>
+        <div className="flex flex-row items-center space-x-1 text-text-300 opacity-70 cursor-default">
+          <span>Points</span>
+          <div className="flex items-center">
+            <div
+              className="min-w-[40px] h-5 px-2 bg-blue-400 rounded-full flex items-center justify-center text-[10px] text-white"
+              title="Points feature coming soon"
+              aria-label="Points feature coming soon"
+            >
+              Soon
+            </div>
+          </div>
+        </div>
       </>
     );
   };
@@ -99,7 +115,7 @@ const Header: React.FC<HeaderProps> = observer(({ onDisconnected }) => {
                 className='flex items-center bg-white text-xs rounded-md overflow-hidden text-black'
               > 
                 <button className='flex items-center space-x-2 px-3 py-2'>
-                  <Image src="/fuel-icon.svg" alt='wallet' width={16} height={16}/>
+                  <Image src="/eth.png" alt='wallet' width={16} height={16}/>
                   <span>{balanceStore.getNativeBalance() || 0.0000} ETH</span>
                 </button>
                 <button className='bg-oxi-bg-02 px-3 py-2 border border-transparent box-border hover:border-blue-200 transition-colors rounded-lg'>

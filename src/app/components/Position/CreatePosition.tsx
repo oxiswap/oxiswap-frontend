@@ -163,6 +163,8 @@ const CreatePositionPage = observer(() => {
   const handleAssetButtonClick = useCallback((index: number) => {
     setIsAssetCardOpen(true);
     setCurrentSelectionIndex(index);
+    positionStore.setAddLiquidityAmounts([]);
+    oracleStore.resetAssetPrices();
   }, []);
 
   const handlePositionConfirmClose = () => {
@@ -211,8 +213,8 @@ const CreatePositionPage = observer(() => {
                   className={`
                     flex flex-col p-4 rounded-lg border 
                     ${selectedPoolType === poolType ? 'border-blue-400' : ''}
-                    ${poolType === 'StablePool' ? 'cursor-not-allowed' : ''}
-                    shadow-md space-y-2 hover:bg-blue-100
+                    ${poolType === 'StablePool' ? 'cursor-not-allowed opacity-50' : 'hover:bg-blue-100'}
+                    shadow-md space-y-2 
                   `}
                   onClick={() => handleSelectPoolType(poolType)}
                   disabled={poolType === 'StablePool'}
