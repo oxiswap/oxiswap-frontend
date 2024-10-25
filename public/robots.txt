@@ -7,6 +7,9 @@ User-agent: *
 Disallow: /blockchain
 Disallow: /utils
 
+User-agent: Twitterbot
+Allow: /
+
 # Host
 Host: https://oxiswap.com
 
