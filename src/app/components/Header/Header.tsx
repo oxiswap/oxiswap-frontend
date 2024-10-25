@@ -13,6 +13,8 @@ import LogoDropMenu from './LogoDropMenu';
 import { useRouter } from 'next/navigation';
 import AbstractIcon from '@components/Header/CreateAbstractIcon';
 import WalletIcon from '@assets/icons/WalletIcon';
+import MobileMenu from './MobileMenu';
+import WebMenu from './WebMenu';
 
 const Header: React.FC<HeaderProps> = observer(({ onDisconnected }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -42,39 +44,11 @@ const Header: React.FC<HeaderProps> = observer(({ onDisconnected }) => {
 
     return (
       <>
-        <button 
-          onClick={() => handleLinkClick("/swap")}
-          className={`transition-colors ${pathname === '/swap' || pathname === '/' ? 'text-black' : 'hover:text-black text-text-300'}`}
-        >
-          <span>Trade</span>
-        </button>
-        <button
-          onClick={() => handleLinkClick("/explore/pool")}
-          className={`transition-colors ${pathname === '/explore/pool' ? 'text-black' : 'hover:text-black text-text-300'}`}
-        >
-          <span>Explore</span>
-        </button>
-        <button
-          onClick={() => handleLinkClick("/pool")}
-          className={`transition-colors ${pathname === '/pool' ? 'text-black' : 'hover:text-black text-text-300'}`}
-        >
-          <span>Pool</span>
-        </button>
-        <Link href="https://app.fuel.network/bridge?from=eth&to=fuel&auto_close=true&=true" target="_blank" rel="noopener noreferrer" className="hover:text-black text-text-300">
-          <span>Bridge</span>
-        </Link>
-        <div className="flex flex-row items-center space-x-1 text-text-300 opacity-70 cursor-default">
-          <span>Points</span>
-          <div className="flex items-center">
-            <div
-              className="min-w-[40px] h-5 px-2 bg-blue-400 rounded-full flex items-center justify-center text-[10px] text-white"
-              title="Points feature coming soon"
-              aria-label="Points feature coming soon"
-            >
-              Soon
-            </div>
-          </div>
-        </div>
+        {isMobile ? (
+          <MobileMenu onLinkClick={handleLinkClick} pathname={pathname} />
+        ) : (
+          <WebMenu onLinkClick={handleLinkClick} pathname={pathname} />
+        )}
       </>
     );
   };
@@ -142,18 +116,32 @@ const Header: React.FC<HeaderProps> = observer(({ onDisconnected }) => {
 
       {isMobile && (
         <div
-          className={`fixed inset-0 bg-white z-50 p-4 transition-transform duration-300 ease-in-out ${
+          className={`fixed inset-0 bg-oxi-bg-02 z-50 px-4 transition-transform duration-300 ease-in-out ${
             isMenuOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
-          <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center justify-between">
             <Image src="/oxiswap.svg" alt="OxiSwap logo" width={120} height={120} />
             <button onClick={() => setIsMenuOpen(false)} aria-label="Close menu">
               <Image src="/close.svg" alt="Close" width={24} height={24} />
             </button>
           </div>
-          <nav className="flex flex-col space-y-4 mt-2">
+          <nav className="flex flex-col space-y-1 bg-white rounded-xl p-1">
             <NavLinks />
+          </nav>
+          <nav className="flex flex-col space-y-1 bg-white rounded-xl p-1 mt-2">
+            <div className="flex flex-col space-y-1 bg-white rounded-xl p-1">
+              <div className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl bg-oxi-bg-02 px-4 py-3 text-lg text-text-300 transition-colors duration-200 ease-in-out">
+                <Link href="https://github.com/oxiswap" target="_blank" rel="noopener noreferrer" className="text-text-300 w-full">
+                  <span>Github</span>
+                </Link>
+              </div>
+              <div className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl bg-oxi-bg-02 px-4 py-3 text-lg text-text-300 transition-colors duration-200 ease-in-out">
+                <Link href="https://discord.gg/oxiswap" target="_blank" rel="noopener noreferrer" className="text-text-300 w-full">
+                  <span>Discord</span>
+                </Link>
+              </div>
+            </div>
           </nav>
         </div>
       )}

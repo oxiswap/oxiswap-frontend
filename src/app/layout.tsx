@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     description: 'Lightning-Fast Decentralized Exchange Built On The Fuel Network',
     images: "https://images.oxiswap.com/preview.png",
     type: 'website',
-    url: 'https://app.oxiswap.com'
+    url: 'https://test.oxiswap.com'
   },
   twitter: {
     card: 'summary_large_image',
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     apple: 'https://images.oxiswap.com/apple-touch-icon.png',
   },
   manifest: '/site.webmanifest',
-  metadataBase: new URL('https://app.oxiswap.com'),
+  metadataBase: new URL('https://test.oxiswap.com'),
 };
 
 export default function RootLayout({
@@ -55,7 +55,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`min-h-screen ${fonts.baselGroteskBook.variable} ${fonts.baselGroteskMedium.variable}`}>
       <head>
-        <link rel="canonical" href="https://oxiswap.com" />
+        <link rel="canonical" href="https://test.oxiswap.com" />
       </head>
       <body className={`${fonts.inter.className} bg-gradient-to-r from-[#d8e0f2] via-[#f4f6fd] to-[#ece2f3] min-h-screen font-basel-grotesk-book relative`}>
         <Providers>
