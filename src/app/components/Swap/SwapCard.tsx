@@ -13,9 +13,17 @@ import { Skeleton } from 'antd';
 
 
 const SwapCard: React.FC<Pick<SwapCardProps,'onAssetCardOpen' | 'onSwapClose' | 'onSetClose' | 'onConnectOpen'>> = ({ onAssetCardOpen, onSwapClose, onSetClose, onConnectOpen }) => {
-  const { accountStore, buttonStore } = useStores();
+  const { accountStore, buttonStore, swapStore } = useStores();
   const isConnected = accountStore.isConnected;
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleSeparatorClick = () => {
+    swapStore.setInitalize();
+    const fromAsset = swapStore.fromAsset;
+    const toAsset = swapStore.toAsset;
+    swapStore.fromAsset = toAsset;
+    swapStore.toAsset = fromAsset;
+  }
 
   useEffect(() => {
     if (!isConnected) {
@@ -41,7 +49,7 @@ const SwapCard: React.FC<Pick<SwapCardProps,'onAssetCardOpen' | 'onSwapClose' | 
           <SwapHeader onAction={onSetClose} />
           <div className="flex flex-col relative">
             <FromAssetInput onAssetCardOpen={() => onAssetCardOpen(true)} />
-            <SwapSeparator />
+            <SwapSeparator onClick={handleSeparatorClick} />
             <ToAssetInput onAssetCardOpen={() => onAssetCardOpen(false)} />
           </div>
           <SwapDetail isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
