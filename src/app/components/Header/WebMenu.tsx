@@ -22,11 +22,19 @@ const WebMenu = ({ onLinkClick, pathname }: { onLinkClick: (path: string) => voi
         <span>Pool</span>
       </button>
 
-      <Link href="https://app.fuel.network/bridge?from=eth&to=fuel&auto_close=true&=true" target="_blank" rel="noopener noreferrer" className="text-text-300 w-full">
+      <Link 
+        href="https://app.fuel.network/bridge?from=eth&to=fuel&auto_close=true&=true" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className="text-text-300 w-full hover:text-black"
+      >
         <span>Bridge</span>
       </Link>
 
-      <div className="flex flex-row items-center space-x-1 text-text-300 opacity-70 cursor-default">
+      <button 
+        onClick={() => onLinkClick("/points")}
+        className={`flex flex-row items-center space-x-1 transition-colors ${pathname === '/points' ? 'text-black' : 'hover:text-black text-text-300'}`}
+      >
         <span>Points</span>
         <div className="flex items-center">
           <div
@@ -37,7 +45,8 @@ const WebMenu = ({ onLinkClick, pathname }: { onLinkClick: (path: string) => voi
             Soon
           </div>
         </div>
-      </div>
+      </button>
+
     </>
   );
 };
