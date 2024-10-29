@@ -38,7 +38,10 @@ const MobileMenu = ({ onLinkClick, pathname }: { onLinkClick: (path: string) => 
         </div>
 
         <div className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl bg-oxi-bg-02 px-4 py-3 text-lg text-text-300 transition-colors duration-200 ease-in-out">
-          <div className="flex flex-row items-center space-x-1 text-text-300 opacity-70 cursor-default">
+          <button 
+            onClick={() => onLinkClick("/points")}
+            className={`flex flex-row items-center space-x-1 transition-colors ${pathname === '/points' ? 'text-black' : 'hover:text-black text-text-300'}`}
+          >
             <span>Points</span>
             <div className="flex items-center">
               <div
@@ -49,7 +52,7 @@ const MobileMenu = ({ onLinkClick, pathname }: { onLinkClick: (path: string) => 
                 Soon
               </div>
             </div>
-          </div>
+          </button>
         </div>
       </nav>
     </>
